@@ -335,8 +335,6 @@ if (strlen($_SESSION['alogin']) == 0) {
                     console.error(`Error fetching geocoding data: ${err}`);
                     return null;
                 });
-
-                console.log(coords)
             
             const coordsToUse = locationObj ? locationObj : coords;
             
