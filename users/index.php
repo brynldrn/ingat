@@ -64,6 +64,7 @@ if (isset($_POST['submit'])) {
   <!-- Vendor CSS -->
   <link href="asset/css/vendor.min.css" rel="stylesheet" type="text/css" />
   <link href="asset/css/icons.min.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <!-- Custom Style -->
   <link href="asset/css/style.min.css" rel="stylesheet" type="text/css" />
   <script src="asset/js/config.js"></script>
@@ -164,11 +165,16 @@ if (isset($_POST['submit'])) {
                   <input type="email" class="form-control" name="username" id="email" placeholder="Enter your email" required autofocus>
                 </div>
                 <div class="mb-3">
-                  <label for="password" class="form-label">Password</label>
-                  <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password" required>
+                <label for="password" class="form-label">Password</label>
+                <div class="password-container position-relative">
+                 <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password" required>
+                  <i class="fa fa-eye position-absolute" id="togglePassword" 
+                   style="top:50%; right:15px; transform: translateY(-50%); cursor: pointer;">
+                     </i>
+               </div>
                 </div>
                 <div class="d-grid">
-                  <button type="submit" class="btn-dark" name="submit"><i class="fa fa-lock"></i> Sign In</button>
+                  <button type="submit" class="btn-dark" name="submit"></i> Sign In</button>
                 </div>
                 <div class="text-center mt-3">
                   <a href="forgot_password.php" id="forgotPasswordLink">Forgot Password?</a>
@@ -186,5 +192,23 @@ if (isset($_POST['submit'])) {
 
   <script src="asset/js/vendor.min.js"></script>
   <script src="asset/js/app.js"></script>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+    const passwordField = document.getElementById("password");
+    const togglePassword = document.getElementById("togglePassword");
+
+    togglePassword.addEventListener("click", function () {
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            togglePassword.classList.remove("fa-eye");
+            togglePassword.classList.add("fa-eye-slash");
+        } else {
+            passwordField.type = "password";
+            togglePassword.classList.remove("fa-eye-slash");
+            togglePassword.classList.add("fa-eye");
+        }
+    });
+});
+</script>
 </body>
 </html>
