@@ -519,6 +519,11 @@ label {
         });
     });
 });
+
+document.addEventListener("DOMContentLoaded", function () {
+    const passwordError = document.getElementById("passwordError");
+    passwordError.style.display = "none";
+});
   </script>
 </body>
 </html>
