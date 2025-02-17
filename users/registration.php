@@ -508,6 +508,16 @@ label {
       termsError.style.display = "none";
       return true;
     }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    const nameFields = ["firstname", "middlename", "lastname"];
+
+    nameFields.forEach(function (fieldId) {
+        document.getElementById(fieldId).addEventListener("input", function () {
+            this.value = this.value.replace(/[^a-zA-Z\s]/g, ""); 
+        });
+    });
+});
   </script>
 </body>
 </html>
