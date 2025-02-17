@@ -170,6 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
   <link href="asset/css/vendor.min.css" rel="stylesheet" type="text/css" />
   <link href="asset/css/icons.min.css" rel="stylesheet" type="text/css" />
   <link href="asset/css/style.min.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
   <script src="asset/js/config.js"></script>
   <style>
     /* Similar styling to the Reset Password page */
