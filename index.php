@@ -285,7 +285,7 @@
                 <p>Ang INGAT ay isang platform para sa kaligtasan ng komunidad na naglalayong tulungan ang mga mamamayan na mag-ulat ng krimen, manatiling updated, at gawing mas ligtas ang kanilang mga paligid. Sa pamamagitan ng Ingat app, madali ang pag-ulat ng insidente at pagbibigay ng abiso sa mga lokal na awtoridad tungkol sa mga emerhensiya o kahina-hinalang aktibidad.</p> 
             </div> 
             <div class="col-12 col-lg-6">
-                 <img src="img/1.png" alt="Community Safety" class="img-fluid rounded" loading="lazy">
+                 <img src="img/hands.png" alt="Community Safety" class="img-fluid rounded" loading="lazy">
  </div> </div> 
 
                <div class="row gy-3 gy-md-4 gy-lg-0">  
