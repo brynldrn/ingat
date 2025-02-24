@@ -1,15 +1,17 @@
 <?php
-// Database configuration
-$servername = "localhost"; // Change if necessary
-$username = "root"; // Your database username
-$password = ""; // Your database password
-$dbname = "ingat_db"; // Your database name
+$servername = "ingat-db.c1qrsgyhssje.ap-southeast-1.rds.amazonaws.com"; 
+$username = "admin"; 
+$password = "password"; 
+$dbname = "ingat_db";
+$port = 3306; 
 
-// Create database connection
-$conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check connection
+$conn = new mysqli($servername, $username, $password, $dbname, $port);
+
+
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
+} else {
+    echo "Connected successfully!";
 }
 ?>
