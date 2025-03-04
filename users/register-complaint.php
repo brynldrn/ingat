@@ -1,23 +1,19 @@
 <?php
-session_start();  // Start the session
-include('includes/config.php');  // Include your database config
+session_start();
+include('includes/config.php');
 
-// Check if user is logged in
 if (strlen($_SESSION['login']) == 0) {
-    header('location:index.php');  // Redirect if not logged in
+    header('location:index.php');
     exit();
 } else {
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $userId = $_SESSION['userId'];  // Get logged-in user's ID
-        
-        // Sanitizing user inputs
+        $userId = $_SESSION['userId'];
         $weaponType = mysqli_real_escape_string($conn, $_POST['weaponType']);
         $crimeType = mysqli_real_escape_string($conn, $_POST['crimeType']);
         $location = mysqli_real_escape_string($conn, $_POST['location']);
         $complain_details = mysqli_real_escape_string($conn, $_POST['complaindetails']);
         $compfile = $_FILES["compfile"]["name"];
-        
-        // Fetch weapon and crime IDs based on selected values
+
         $weaponQuery = mysqli_query($conn, "SELECT id FROM weapons WHERE weapon_type = '$weaponType'");
         $weaponRow = mysqli_fetch_assoc($weaponQuery);
         $weaponId = $weaponRow['id'];
@@ -26,36 +22,92 @@ if (strlen($_SESSION['login']) == 0) {
         $crimeRow = mysqli_fetch_assoc($crimeQuery);
         $crimeId = $crimeRow['id'];
 
-        // Handle file upload securely
         if ($compfile) {
             $target_dir = "complaintdocs/";
             $target_file = $target_dir . uniqid() . basename($compfile);
             $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+            $mimeType = mime_content_type($_FILES["compfile"]["tmp_name"]);
 
-            // Check file type
-            if (in_array($fileType, ['jpg', 'png', 'pdf', 'docx'])) {
+     
+            $allowedImageTypes = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'];
+            $allowedVideoTypes = ['mp4', 'avi', 'mov'];
+
+            if (in_array($fileType, $allowedImageTypes) || in_array($fileType, $allowedVideoTypes)) {
                 if (move_uploaded_file($_FILES["compfile"]["tmp_name"], $target_file)) {
-                    echo '<script>alert("File uploaded successfully.");</script>';
+                 
+                    $endpoint = in_array($fileType, $allowedImageTypes) 
+                        ? 'https://api.sightengine.com/1.0/check.json' 
+                        : 'https://api.sightengine.com/1.0/video/check-sync.json';
+
+                    $params = array(
+                        'media' => new CURLFile($target_file),
+                        'models' => in_array($fileType, $allowedImageTypes) ? 'nudity-2.1,genai' : 'nudity-2.1', // genai only for images
+                        'api_user' => '1404146414',
+                        'api_secret' => 'SNxrhUxrGT3MmEUHmHdfmjtoTTYrbnUr',
+                    );
+
+                    $ch = curl_init($endpoint);
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+                    $response = curl_exec($ch);
+                    curl_close($ch);
+
+                    $output = json_decode($response, true);
+
+                 
+                    if (in_array($fileType, $allowedImageTypes)) {
+                        $nudityNone = isset($output['nudity']['none']) ? $output['nudity']['none'] : 0;
+                        $aiGenerated = isset($output['type']['ai_generated']) ? $output['type']['ai_generated'] : 1;
+
+                        if ($nudityNone < 0.99) {
+                            echo '<script>alert("The image contains nudity and cannot be uploaded.");</script>';
+                            unlink($target_file);
+                            exit();
+                        } elseif ($aiGenerated > 0.01) {
+                            echo '<script>alert("The image is AI-generated and cannot be uploaded.");</script>';
+                            unlink($target_file);
+                            exit();
+                        }
+                    } else {
+                        
+                        $frames = $output['data']['frames'] ?? [];
+                        $hasNudity = false;
+                        foreach ($frames as $frame) {
+                            if (isset($frame['nudity']['none']) && $frame['nudity']['none'] < 0.99) {
+                                $hasNudity = true;
+                                break;
+                            }
+                        }
+                        if ($hasNudity) {
+                            echo '<script>alert("The video contains nudity and cannot be uploaded.");</script>';
+                            unlink($target_file);
+                            exit();
+                        }
+                    }
+
+                    echo '<script>alert("File is clean and uploaded successfully.");</script>';
                 } else {
                     echo '<script>alert("File upload failed. Please try again.");</script>';
+                    exit();
                 }
+            } else {
+                echo '<script>alert("Invalid file type. Only JPG, JPEG, PNG, WEBP, BMP, TIFF, MP4, AVI, MOV allowed.");</script>';
+                exit();
             }
         }
 
-        // Generate unique complaint number
         $complaint_number = 'CMP-' . time() . '-' . rand(1000, 9999);
-
-        // Insert complaint details into tblcomplaints
-        $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, crime_type_id, weapon_id, location, complaint_details$complaint_details, complaint_file, registered_at, last_updated_at) 
+        $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, crime_type_id, weapon_id, location, complaint_details, complaint_file, registered_at, last_updated_at) 
                               VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
-        $stmt->bind_param('siiisss', $complaint_number, $userId, $crimeId, $weaponId, $location, $complain_details, $compfile);        
+        $stmt->bind_param('siiisss', $complaint_number, $userId, $crimeId, $weaponId, $location, $complain_details, $target_file);
         $stmt->execute();
 
-        // Notify the user about the successful submission
         echo '<script>alert("Your complaint has been successfully filed. Complaint Number: ' . $complaint_number . '");</script>';
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,15 +120,15 @@ if (strlen($_SESSION['login']) == 0) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
     <style>
 #map {
-    height: calc(100vh - 60px); /* Fullscreen map minus header height */
+    height: calc(100vh - 60px); 
     margin-top: 60px;
-    margin-left: 285px; /* Default left margin for the sidebar width */
+    margin-left: 285px;
 }
 
 @media (max-width: 768px) {
     #map {
-        margin-left: 0; /* Remove left margin on mobile devices */
-        height: calc(100vh - 60px); /* Fullscreen map minus header height */
+        margin-left: 0;
+        height: calc(100vh - 60px);
     }
 }
 .header{
@@ -87,10 +139,10 @@ if (strlen($_SESSION['login']) == 0) {
 }
 
 .leaflet-top.leaflet-right {
-    top: 70px; /* Place the button below the header */
-    right: 20px; /* Add space to avoid the sidebar */
-    z-index: 2000; /* Higher than the map to make it clickable */
-    pointer-events: auto; /* Ensure the button is interactive */
+    top: 70px; 
+    right: 20px; 
+    z-index: 2000; 
+    pointer-events: auto;
 }
 
 .locate-me-btn {
@@ -124,105 +176,177 @@ if (strlen($_SESSION['login']) == 0) {
 .btn-close-large {
     background-color: transparent;
     border: none;
-    font-size: 24px; /* Make the "X" larger */
-    color: #fff; /* White color for contrast */
+    font-size: 24px; 
+    color: #fff; 
     font-weight: bold;
     cursor: pointer;
     position: absolute;
     top: 10px;
     right: 10px;
-    z-index: 2000; /* Ensure it's clickable */
+    z-index: 2000;
 }
 
 .modal-content {
     margin-top: 70px;
-    z-index: 1050; /* Ensure modal content is above header */
+    z-index: 1050;
 }
 
 .modal-backdrop {
-    z-index: 1040; /* Ensure backdrop is below modal content but above header */
+    z-index: 1040; 
 }
 </style>
 </head>
 <body>
-    <section id="container">
-        <?php include("includes/header.php"); ?>
-        <?php include("includes/sidebar.php"); ?>
+<section id="container">
+    <?php include("includes/header.php"); ?>
+    <?php include("includes/sidebar.php"); ?>
 
-        <section id="main-content">
+    <section id="main-content">
         <div id="map"></div>
 
-<!-- Locate Me Button -->
-<div class="leaflet-top leaflet-right">
-    <button class="locate-me-btn" onclick="locateMe()">📍</button>
-</div>
+        <!-- Locate Me Button -->
+        <div class="leaflet-top leaflet-right">
+            <button class="locate-me-btn" onclick="locateMe()">📍</button>
+        </div>
 
-            <!-- Form Modal -->
-<div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="formModalLabel">Register Complaint</h5>
-                <button type="button" class="btn-close-large" data-bs-dismiss="modal" aria-label="Close">×</button>
-            </div>
-            <div class="modal-body">
-                <form class="form-horizontal style-form" method="post" enctype="multipart/form-data">
-                    <!-- Location -->
-                    <div class="mb-3">
-                        <label for="location" class="form-label">Location</label>
-                        <input type="text" id="location" name="location" class="form-control" required placeholder="Enter or select location">
+        <!-- Form Modal -->
+        <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="formModalLabel">Register Complaint</h5>
+                        <button type="button" class="btn-close-large" data-bs-dismiss="modal" aria-label="Close">×</button>
                     </div>
-                    <!-- Weapon Type -->
-                    <div class="mb-3">
-                        <label for="weaponType" class="form-label">Weapon Type</label>
-                        <select name="weaponType" id="weaponType" class="form-control select2" required>
-                            <option value="">Select Weapon Type</option>
-                            <?php
-                            $weaponQuery = mysqli_query($conn, "SELECT * FROM weapons");
-                            while ($weapon = mysqli_fetch_array($weaponQuery)) {
-                                echo '<option value="' . $weapon['weapon_type'] . '">' . $weapon['weapon_type'] . ' - ' . $weapon['details'] . '</option>';
-                            }
-                            ?>
-                        </select>
+                    <div class="modal-body">
+                        <form class="form-horizontal style-form" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" id="location" name="location" class="form-control" required placeholder="Enter or select location">
+                            </div>
+                            <div class="mb-3">
+                                <label for="weaponType" class="form-label">Weapon Type</label>
+                                <select name="weaponType" id="weaponType" class="form-control select2" required>
+                                    <option value="">Select Weapon Type</option>
+                                    <?php
+                                    $weaponQuery = mysqli_query($conn, "SELECT * FROM weapons");
+                                    while ($weapon = mysqli_fetch_array($weaponQuery)) {
+                                        echo '<option value="' . $weapon['weapon_type'] . '">' . $weapon['weapon_type'] . ' - ' . $weapon['details'] . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="crimeType" class="form-label">Crime Type</label>
+                                <select name="crimeType" id="crimeType" class="form-control select2" required>
+                                    <option value="">Select Crime Type</option>
+                                    <?php
+                                    $crimeQuery = mysqli_query($conn, "SELECT * FROM crime_types");
+                                    while ($crime = mysqli_fetch_array($crimeQuery)) {
+                                        echo '<option value="' . $crime['crime_type'] . '">' . $crime['crime_type'] . ' - ' . $crime['details'] . '</option>';
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="complaindetails" class="form-label">Complaint Details</label>
+                                <textarea name="complaindetails" id="complaindetails" class="form-control" required rows="5" maxlength="2000"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="compfile" class="form-label">Upload Evidence</label>
+                                <input type="file" name="compfile" id="compfile" class="form-control" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff,video/mp4,video/avi,video/quicktime">
+                                <p id="scanResult" style="color: red; display: none;">Scanning...</p>
+                            </div>
+                            <div class="mb-3 text-end">
+                                <button type="submit" id="submitBtn" name="submit" class="btn btn-primary" disabled>Submit</button>
+                            </div>
+                        </form>
                     </div>
-                    <!-- Crime Type -->
-                    <div class="mb-3">
-                        <label for="crimeType" class="form-label">Crime Type</label>
-                        <select name="crimeType" id="crimeType" class="form-control select2" required>
-                            <option value="">Select Crime Type</option>
-                            <?php
-                            $crimeQuery = mysqli_query($conn, "SELECT * FROM crime_types");
-                            while ($crime = mysqli_fetch_array($crimeQuery)) {
-                                echo '<option value="' . $crime['crime_type'] . '">' . $crime['crime_type'] . ' - ' . $crime['details'] . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <!-- Complaint Details -->
-                    <div class="mb-3">
-                        <label for="complaindetails" class="form-label">Complaint Details</label>
-                        <textarea name="complaindetails" id="complaindetails" class="form-control" required rows="5" maxlength="2000"></textarea>
-                    </div>
-                    <!-- File Upload -->
-                    <div class="mb-3">
-                        <label for="compfile" class="form-label">Complaint Related Doc</label>
-                        <input type="file" name="compfile" id="compfile" class="form-control">
-                    </div>
-                    <!-- Submit -->
-                    <div class="mb-3 text-end">
-                        <button type="submit" name="submit" class="btn btn-primary">Submit</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-    </div>
-</div>
-
-        </section>
-
-        <?php include("includes/footer.php"); ?>
     </section>
+    <?php include("includes/footer.php"); ?>
+</section>
 
+<script>
+document.getElementById('compfile').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    const submitBtn = document.getElementById('submitBtn');
+    const scanResult = document.getElementById('scanResult');
+
+    if (!file) {
+        scanResult.style.display = 'none';
+        submitBtn.disabled = true;
+        return;
+    }
+
+    scanResult.style.display = 'block';
+    scanResult.innerText = 'Scanning...';
+    scanResult.style.color = 'orange';
+    submitBtn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('media', file);
+    const isImage = file.type.startsWith('image/');
+    formData.append('models', isImage ? 'nudity-2.1,genai' : 'nudity-2.1');
+    formData.append('api_user', '1404146414');
+    formData.append('api_secret', 'SNxrhUxrGT3MmEUHmHdfmjtoTTYrbnUr');
+
+    const endpoint = isImage 
+        ? 'https://api.sightengine.com/1.0/check.json' 
+        : 'https://api.sightengine.com/1.0/video/check-sync.json';
+
+    fetch(endpoint, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (isImage) {
+            const nudityNone = data.nudity && data.nudity.none ? (data.nudity.none * 100) : 0;
+            const aiGenerated = data.type && data.type.ai_generated ? (data.type.ai_generated * 100) : 100;
+
+            if (nudityNone < 99) {
+                scanResult.innerText = `Warning! Nudity detected: ${(100 - nudityNone).toFixed(2)}%`;
+                scanResult.style.color = 'red';
+                submitBtn.disabled = true;
+            } else if (aiGenerated > 1) {
+                scanResult.innerText = `Warning! AI-generated content: ${aiGenerated.toFixed(2)}%`;
+                scanResult.style.color = 'red';
+                submitBtn.disabled = true;
+            } else {
+                scanResult.innerText = 'File is clean. You can submit.';
+                scanResult.style.color = 'green';
+                submitBtn.disabled = false;
+            }
+        } else {
+            const frames = data.data && data.data.frames ? data.data.frames : [];
+            let hasNudity = false;
+            for (const frame of frames) {
+                if (frame.nudity && frame.nudity.none < 0.99) {
+                    hasNudity = true;
+                    break;
+                }
+            }
+            if (hasNudity) {
+                scanResult.innerText = 'Warning! Nudity detected in video.';
+                scanResult.style.color = 'red';
+                submitBtn.disabled = true;
+            } else {
+                scanResult.innerText = 'File is clean. You can submit.';
+                scanResult.style.color = 'green';
+                submitBtn.disabled = false;
+            }
+        }
+    })
+    .catch(error => {
+        scanResult.innerText = 'Error scanning file. Please try again.';
+        scanResult.style.color = 'red';
+        submitBtn.disabled = true;
+        console.error('Error:', error);
+    });
+});
+</script>
     <!-- JS Scripts -->
     <script src="assets/js/jquery.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>

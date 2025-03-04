@@ -2,11 +2,6 @@
 session_start();
 include('include/config.php');
 
-function isJson($string) {
-    json_decode($string);
-    return json_last_error() === JSON_ERROR_NONE;
-}
-
 if (strlen($_SESSION['alogin']) == 0) {
     header('location:index.php');
     exit;
@@ -14,43 +9,35 @@ if (strlen($_SESSION['alogin']) == 0) {
     date_default_timezone_set('Asia/Kolkata');
     $currentTime = date('d-m-Y h:i:s A', time());
 
-    // Validate and fetch complaint details
     $cid = $_GET['cid'] ?? null;
     if (!$cid || !preg_match('/^CMP-\d{10,15}-\d{3,4}$/', $cid)) {
         header('Location: errorPage.php?msg=Invalid Complaint Number');
         exit();
-    }      
+    }
+
     try {
         $stmt = $conn->prepare("
-        SELECT tblcomplaints.*, users.firstname, users.middlename, users.lastname, weapons.weapon_type, crime_types.crime_type 
-        FROM tblcomplaints 
-        JOIN users ON users.id = tblcomplaints.userId 
-        LEFT JOIN weapons ON weapons.id = tblcomplaints.weapon_id
-        LEFT JOIN crime_types ON crime_types.id = tblcomplaints.crime_type_id
-        WHERE tblcomplaints.complaint_number = ?
-    ");
-    $stmt->bind_param("s", $cid);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($result->num_rows === 0) {
-        die("<p>Complaint not found.</p>");
-    }
-    
-    $complaint_details = $result->fetch_assoc();
-    
-    // Combine firstname, middlename, and lastname
-    $complaint_details['name'] = $complaint_details['firstname'];
-    if (!empty($complaint_details['middlename'])) {
-        $complaint_details['name'] .= ' ' . $complaint_details['middlename'];
-    }
-    $complaint_details['name'] .= ' ' . $complaint_details['lastname'];
-    
+            SELECT tblcomplaints.*, users.firstname, users.middlename, users.lastname, weapons.weapon_type, crime_types.crime_type 
+            FROM tblcomplaints 
+            JOIN users ON users.id = tblcomplaints.userId 
+            LEFT JOIN weapons ON weapons.id = tblcomplaints.weapon_id
+            LEFT JOIN crime_types ON crime_types.id = tblcomplaints.crime_type_id
+            WHERE tblcomplaints.complaint_number = ?
+        ");
+        $stmt->bind_param("s", $cid);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows === 0) {
+            die("<p>Complaint not found.</p>");
+        }
+
+        $complaint_details = $result->fetch_assoc();
+        $complaint_details['name'] = trim($complaint_details['firstname'] . ' ' . ($complaint_details['middlename'] ? $complaint_details['middlename'] . ' ' : '') . $complaint_details['lastname']);
     } catch (Exception $e) {
         die("<p>Error fetching complaint details: " . htmlspecialchars($e->getMessage()) . "</p>");
     }
-    
-    // Fetch remarks
+
     try {
         $stmt = $conn->prepare("SELECT remark, status, remark_date FROM complaintremark WHERE complaint_number = ? ORDER BY remark_date DESC");
         $stmt->bind_param("s", $cid);
@@ -59,7 +46,12 @@ if (strlen($_SESSION['alogin']) == 0) {
     } catch (Exception $e) {
         die("<p>Error fetching remarks: " . htmlspecialchars($e->getMessage()) . "</p>");
     }
-    ?>
+
+    $uploadBasePath = __DIR__ . '/../users/complaintdocs/';
+    $filePath = $complaint_details['complaint_file'] ? $uploadBasePath . basename($complaint_details['complaint_file']) : null;
+    $fileExists = $filePath && file_exists($filePath);
+    $fileType = $fileExists ? strtolower(pathinfo($filePath, PATHINFO_EXTENSION)) : null;
+?>
 
 <!DOCTYPE html>
 <html lang="en">
@@ -146,27 +138,18 @@ if (strlen($_SESSION['alogin']) == 0) {
                     <tr>
                         <th>File (if any)</th>
                         <td colspan="3">
-                            <?= $complaint_details['complaint_file'] ? 
-                                '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fileModal">View File</button>' 
-                                : 'File NA'; ?>
+                            <?php if ($complaint_details['complaint_file'] && $fileExists): ?>
+                                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#fileModal">View File</button>
+                            <?php elseif ($complaint_details['complaint_file']): ?>
+                                <span class="text-danger">File not found: <?= htmlspecialchars($complaint_details['complaint_file']); ?></span>
+                            <?php else: ?>
+                                File NA
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <tr>
                         <th>Location</th>
-                        <td>
-                            <a href="#" id="locationLink">
-                                <?php 
-                                    $db_value_location = $complaint_details['location'];
-
-                                    if (isJson($db_value_location)) {
-                                        $json_location = json_decode($db_value_location);
-                                        echo $json_location->selectedLocation->title;
-                                    } else {
-                                        echo htmlspecialchars($db_value_location);
-                                    }
-                                ?>
-                            </a>
-                        </td>
+                        <td><a href="#" id="locationLink"><?= htmlspecialchars($complaint_details['location']); ?></a></td>
                         <th>Weapon Type</th>
                         <td><?= htmlspecialchars($complaint_details['weapon_type']); ?></td>
                     </tr>
@@ -195,11 +178,31 @@ if (strlen($_SESSION['alogin']) == 0) {
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <iframe src="../users/complaintdocs/<?= htmlspecialchars($complaint_details['complaint_file']); ?>" frameborder="0" style="width: 100%; height: 500px;"></iframe>
+                <?php if ($fileExists): ?>
+                    <?php if (in_array($fileType, ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'])): ?>
+                        <img src="../users/complaintdocs/<?= htmlspecialchars(basename($complaint_details['complaint_file'])); ?>" alt="Complaint File" style="width: 100%; height: auto;">
+                    <?php elseif (in_array($fileType, ['mp4', 'avi', 'mov'])): ?>
+                        <video controls style="width: 100%; height: auto;">
+                            <source src="../users/complaintdocs/<?= htmlspecialchars(basename($complaint_details['complaint_file'])); ?>" type="video/<?= $fileType === 'mov' ? 'quicktime' : $fileType; ?>">
+                            Your browser does not support the video tag.
+                        </video>
+                    <?php else: ?>
+                        <iframe src="../users/complaintdocs/<?= htmlspecialchars(basename($complaint_details['complaint_file'])); ?>" frameborder="0" style="width: 100%; height: 500px;"></iframe>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <p>File not available or path is incorrect.</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
-</div>
+</div><script>
+    $(document).ready(function() {
+        $('#fileModal').on('shown.bs.modal', function () {
+            const video = document.querySelector('video');
+            if (video) video.load();
+        });
+    });
+</script>
 
 <!-- Update Complaint Modal -->
 <div class="modal fade" id="updateComplaintModal" tabindex="-1" aria-labelledby="updateComplaintModalLabel" aria-hidden="true">
@@ -286,42 +289,8 @@ if (strlen($_SESSION['alogin']) == 0) {
         // Handle location link click
         document.getElementById('locationLink').addEventListener('click', async function (e) {
             e.preventDefault();
-            const locationLabel = '<?php
-                if (isJson($db_value_location)) {
-                    $json_location = json_decode($db_value_location);
-                    echo $json_location->selectedLocation->title;
-                } else {
-                    echo htmlspecialchars($db_value_location);
-                }
-            ?>'
-            const location = '<?php 
-                $db_value_location = $complaint_details['location'];
-
-                if (isJson($db_value_location)) {
-                    $json_location = json_decode($db_value_location);
-                    echo '[' . $json_location->markers[0]->longitude . ',' . $json_location->markers[0]->latitude . ']';
-                } else {
-                    echo htmlspecialchars($db_value_location);
-                }
-            ?>';
-
-            function safelyParseJSON (json) {
-                // This function cannot be optimised, it's best to
-                // keep it small!
-                var parsed
-
-                try {
-                    parsed = JSON.parse(json)
-                } catch (e) {
-                    // Oh well, but whatever...
-                }
-
-                return parsed // Could be undefined!
-            }
-            
-            const locationObj = safelyParseJSON(location);
-            const search = locationObj ? locationObj?.join(',') : encodeURIComponent(location)
-            const coords = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${search}.json?access_token=${mapboxgl.accessToken}`)
+            const location = '<?= htmlspecialchars($complaint_details['location']); ?>';
+            const coords = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(location)}.json?access_token=${mapboxgl.accessToken}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.features.length > 0) {
@@ -335,18 +304,16 @@ if (strlen($_SESSION['alogin']) == 0) {
                     console.error(`Error fetching geocoding data: ${err}`);
                     return null;
                 });
-            
-            const coordsToUse = locationObj ? locationObj : coords;
-            
-            if (coordsToUse) {
-                map.setView([coordsToUse[1], coordsToUse[0]], 14); // Zoom in to the location
-                L.marker([coordsToUse[1], coordsToUse[0]], { icon: L.icon({
+
+            if (coords) {
+                map.setView([coords[1], coords[0]], 14); // Zoom in to the location
+                L.marker([coords[1], coords[0]], { icon: L.icon({
                     iconUrl: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
                     iconSize: [32, 32],
                     iconAnchor: [16, 32],
                     popupAnchor: [0, -32]
                 })}).addTo(map)
-                    .bindPopup(`<b>${locationLabel}</b>`)
+                    .bindPopup(`<b>${location}</b>`)
                     .openPopup();
             }
 
@@ -364,5 +331,4 @@ if (strlen($_SESSION['alogin']) == 0) {
 </script>
 </body>
 </html>
-<?php unset($db_value_location); unset($json_location); ?>
 <?php } ?>
