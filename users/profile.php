@@ -61,6 +61,7 @@ if (strlen($_SESSION['login']) == 0) {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
+    <link rel="shortcut icon" href="asset/images/ingat.ico">
     <link href="assets/css/bootstrap.css" rel="stylesheet">
     <style>
        /* General Styling */

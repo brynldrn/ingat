@@ -115,6 +115,7 @@ if (strlen($_SESSION['login']) == 0) {
     <title>Register Complaint</title>
     <link href="assets/css/bootstrap.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
+    <link rel="shortcut icon" href="asset/images/ingat.ico">
     <link href="assets/css/style-responsive.css" rel="stylesheet">
     <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
