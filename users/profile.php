@@ -93,9 +93,11 @@ body {
     padding: 20px;
     background-color: white;
     position: relative;
-    z-index: 5; /* Ensure it doesn't overlap important elements */
+    z-index: 5; 
+    padding-bottom: 40px;
+  border-bottom-right-radius: 10px;
+  border-bottom-left-radius: 10px;
 }
-
 
 .form-group label {
     font-weight: bold;
@@ -345,6 +347,13 @@ body {
                                                         <label for="user_image">Profile Photo</label>
                                                         <input type="file" class="form-control" name="user_image">
                                                     </div>
+                                                    <div class="form-group">
+                                                  <label for="upload_id">Valid ID</label>
+                                                  <input type="file" class="form-control" name="upload_id" accept="image/jpeg,image/png,application/pdf">
+                                                   <?php if (!empty($row['upload_id'])) { ?>
+                                                  <small>Current: <a href="<?php echo $row['upload_id']; ?>" target="_blank">View ID</a></small>
+                                                   <?php } ?>
+                                                  </div>
                                                     <div class="form-group">
                                                         <label for="firstName">First Name</label>
                                                         <input type="text" class="form-control" name="firstName" value="<?php echo htmlentities($row['firstname']); ?>" required>
