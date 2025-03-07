@@ -335,8 +335,8 @@
             Together, we create safer communities by reporting incidents, staying informed, and navigating real-time situations. INGAT empowers citizens to take action.
         </p>
         <div class="buttons">
-            <a href="/inform/users/registration.php" class="btn">Register</a>
-            <a href="/inform/users/" class="btn">Login</a>
+            <a href="users/registration.php" class="btn">Register</a>
+            <a href="users/index.php" class="btn">Login</a>
         </div>
     </div>
 
