@@ -380,7 +380,7 @@ body {
                                                         </div>
                                                     </div>
                                                     <div class="form-group">
-                                                        <label for="user_email">User Email</label>
+                                                        <label for="user_email">Email</label>
                                                         <input type="email" name="user_email" required value="<?php echo htmlentities($row['user_email']); ?>" class="form-control" readonly>
                                                     </div>
                                                     <div class="form-group">

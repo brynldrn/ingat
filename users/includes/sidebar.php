@@ -41,9 +41,6 @@
          <a href="status.php">
             <i class="ri-bar-chart-line"></i> Status
          </a>
-         <a href="#">
-            <i class="ri-information-line"></i> About Us
-         </a>
          <a href="logout.php">
             <i class="ri-logout-box-r-line"></i> Logout
          </a>
