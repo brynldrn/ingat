@@ -324,7 +324,7 @@
     <div class="header">
         <img src="img/logo.png" alt="INGAT">
         <nav>
-            <a href="/inform/map.php">Map</a>
+            <a href="/map.php">Map</a>
         </nav>
     </div>
 
