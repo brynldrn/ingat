@@ -274,7 +274,7 @@
         }
 
         .download-section h2 {
-            color: #006400;
+            color: #1f0064;
             font-size: 2.2rem;
             margin-bottom: 20px;
         }
