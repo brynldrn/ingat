@@ -200,11 +200,23 @@
             }
 
             .img-fluid {
-                max-width: 100%;  /* On mobile, images should be full-width */
+                max-width: 100%;  
             }
 
             footer {
                 font-size: 1rem;
+            }
+            .download-section h2 {
+                font-size: 1.8rem;
+            }
+
+            .download-section p {
+                font-size: 1rem;
+            }
+
+            .download-section .download-btn {
+                font-size: 1.1rem;
+                padding: 10px 20px;
             }
         }
 
@@ -253,6 +265,56 @@
                 opacity: 1;
                 transform: translateY(0);
             }
+        }
+        .download-section {
+            padding: 50px 20px;
+            background-color: #f1f3f5;
+            text-align: center;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .download-section h2 {
+            color: #006400;
+            font-size: 2.2rem;
+            margin-bottom: 20px;
+        }
+
+        .download-section p {
+            font-size: 1.1rem;
+            color: #333;
+            margin-bottom: 30px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .download-section .download-btn {
+            display: inline-flex;
+            align-items: center;
+            background-color: #006400;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .download-section .download-btn:hover {
+            background-color: #004d00;
+            transform: translateY(-3px);
+        }
+
+        .download-section .download-btn::before {
+            content: "📥";
+            margin-right: 10px;
+        }
+
+        .download-section .requirements {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 10px;
         }
     </style>
 </head>
@@ -307,6 +369,14 @@
     </div>  
 </div>  
 
+    </section>
+    <section class="download-section" id="download">
+        <h2>Download INGAT Mobile App</h2>
+        <p>Access community safety features anytime, anywhere with our mobile application. Stay connected with real-time incident reports and alerts on the go.</p>
+        <a href="https://github.com/elaizakriselle/ingat/releases/download/alpha-1.1.0/build-1741099535010.apk" 
+           class="download-btn" 
+           download="INGAT-App.apk">Download APK</a>
+        <p class="requirements">For Android devices running Android 7.0 and above</p>
     </section>
 
     <!-- Footer -->
