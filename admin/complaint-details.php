@@ -33,7 +33,7 @@ if (strlen($_SESSION['alogin']) == 0) {
         }
 
         $complaint_details = $result->fetch_assoc();
-        $complaint_details['name'] = trim($complaint_details['firstname'] . ' ' . ($complaint_details['middlename'] ? $complaint_details['middlename'] . ' ' : '') . $complaint_details['lastname']);
+        $complaint_details['name'] = $complaint_details['anonymous'] ? 'Anonymous' : trim($complaint_details['firstname'] . ' ' . ($complaint_details['middlename'] ? $complaint_details['middlename'] . ' ' : '') . $complaint_details['lastname']);
     } catch (Exception $e) {
         die("<p>Error fetching complaint details: " . htmlspecialchars($e->getMessage()) . "</p>");
     }

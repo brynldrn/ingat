@@ -100,7 +100,7 @@ table.dataTable tbody tr {
                         </thead>
                         <tbody>
                         <?php 
-$query = mysqli_query($conn, "SELECT c.complaint_number, u.firstname, u.middlename, u.lastname, c.registered_at, c.status FROM tblcomplaints c JOIN users u ON u.id = c.userId WHERE c.status = 'In Progress' LIMIT 0, 25;");
+$query = mysqli_query($conn, "SELECT c.complaint_number, u.firstname, u.middlename, u.lastname, c.registered_at, c.status, c.anonymous FROM tblcomplaints c JOIN users u ON u.id = c.userId WHERE c.status = 'In Progress' LIMIT 0, 25;");
 while ($row = mysqli_fetch_array($query)) {
     $date = new DateTime($row['registered_at']);
     // Combine first, middle, and last names
@@ -110,7 +110,7 @@ while ($row = mysqli_fetch_array($query)) {
 ?>
                             <tr>
                                 <td><?php echo htmlentities($row['complaint_number']); ?></td>
-                                <td><?php echo htmlentities($name); ?></td>
+                                <td><?php echo $row['anonymous'] ? 'Anonymous' : htmlentities($name); ?></td>
                                 <td><?php echo $date->format('m/d/Y h:i A'); ?></td>
                                 <td><?php echo htmlentities($row['status']); ?></td>
                                 <td><a href="complaint-details.php?cid=<?php echo htmlentities($row['complaint_number']); ?>" class="btn btn-sm btn-primary">View Details</a></td>

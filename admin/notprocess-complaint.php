@@ -106,7 +106,7 @@ table.dataTable tbody tr {
                         </thead>
                         <tbody>
                         <?php 
-$query = mysqli_query($conn, "SELECT c.complaint_number, u.firstname, u.middlename, u.lastname, c.registered_at FROM tblcomplaints c JOIN users u ON u.id = c.userId WHERE c.status IS NULL AND c.userId IS NOT NULL AND c.crime_type_id IS NOT NULL AND c.weapon_id IS NOT NULL LIMIT 0, 25;");
+$query = mysqli_query($conn, "SELECT c.complaint_number, u.firstname, u.middlename, u.lastname, c.registered_at, c.anonymous FROM tblcomplaints c JOIN users u ON u.id = c.userId WHERE c.status IS NULL AND c.userId IS NOT NULL AND c.crime_type_id IS NOT NULL AND c.weapon_id IS NOT NULL LIMIT 0, 25;");
 if (mysqli_num_rows($query) > 0) {
     while ($row = mysqli_fetch_array($query)) {
         $date = new DateTime($row['registered_at']);
@@ -117,7 +117,7 @@ if (mysqli_num_rows($query) > 0) {
 ?>
                             <tr>
                                 <td><?php echo htmlentities($row['complaint_number']); ?></td>
-                                <td><?php echo htmlentities($name); ?></td>
+                                <td><?php echo $row['anonymous'] ? 'Anonymous' : htmlentities($name); ?></td>
                                 <td><?php echo $date->format('m/d/Y h:i A'); ?></td>
                                 <td><span class="status-highlight">New Complaint</span></td>
                                 <td><a href="complaint-details.php?cid=<?php echo htmlentities($row['complaint_number']); ?>" class="btn btn-sm btn-primary">View Details</a></td>

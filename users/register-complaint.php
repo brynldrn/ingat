@@ -13,6 +13,7 @@ if (strlen($_SESSION['login']) == 0) {
         $location = mysqli_real_escape_string($conn, $_POST['location']);
         $complain_details = mysqli_real_escape_string($conn, $_POST['complaindetails']);
         $compfile = $_FILES["compfile"]["name"];
+        $anonymous = isset($_POST['anonymous']) ? 1 : 0;
 
         $weaponQuery = mysqli_query($conn, "SELECT id FROM weapons WHERE weapon_type = '$weaponType'");
         $weaponRow = mysqli_fetch_assoc($weaponQuery);
@@ -28,20 +29,18 @@ if (strlen($_SESSION['login']) == 0) {
             $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
             $mimeType = mime_content_type($_FILES["compfile"]["tmp_name"]);
 
-     
             $allowedImageTypes = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'];
             $allowedVideoTypes = ['mp4', 'avi', 'mov'];
 
             if (in_array($fileType, $allowedImageTypes) || in_array($fileType, $allowedVideoTypes)) {
                 if (move_uploaded_file($_FILES["compfile"]["tmp_name"], $target_file)) {
-                 
                     $endpoint = in_array($fileType, $allowedImageTypes) 
                         ? 'https://api.sightengine.com/1.0/check.json' 
                         : 'https://api.sightengine.com/1.0/video/check-sync.json';
 
                     $params = array(
                         'media' => new CURLFile($target_file),
-                        'models' => in_array($fileType, $allowedImageTypes) ? 'nudity-2.1,genai' : 'nudity-2.1', // genai only for images
+                        'models' => in_array($fileType, $allowedImageTypes) ? 'nudity-2.1,genai' : 'nudity-2.1',
                         'api_user' => '1404146414',
                         'api_secret' => 'SNxrhUxrGT3MmEUHmHdfmjtoTTYrbnUr',
                     );
@@ -55,7 +54,6 @@ if (strlen($_SESSION['login']) == 0) {
 
                     $output = json_decode($response, true);
 
-                 
                     if (in_array($fileType, $allowedImageTypes)) {
                         $nudityNone = isset($output['nudity']['none']) ? $output['nudity']['none'] : 0;
                         $aiGenerated = isset($output['type']['ai_generated']) ? $output['type']['ai_generated'] : 1;
@@ -70,7 +68,6 @@ if (strlen($_SESSION['login']) == 0) {
                             exit();
                         }
                     } else {
-                        
                         $frames = $output['data']['frames'] ?? [];
                         $hasNudity = false;
                         foreach ($frames as $frame) {
@@ -98,9 +95,9 @@ if (strlen($_SESSION['login']) == 0) {
         }
 
         $complaint_number = 'CMP-' . time() . '-' . rand(1000, 9999);
-        $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, crime_type_id, weapon_id, location, complaint_details, complaint_file, registered_at, last_updated_at) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())");
-        $stmt->bind_param('siiisss', $complaint_number, $userId, $crimeId, $weaponId, $location, $complain_details, $target_file);
+        $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, crime_type_id, weapon_id, location, complaint_details, complaint_file, registered_at, last_updated_at, anonymous) 
+                              VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)");
+        $stmt->bind_param('siiisssi', $complaint_number, $userId, $crimeId, $weaponId, $location, $complain_details, $target_file, $anonymous);
         $stmt->execute();
 
         echo '<script>alert("Your complaint has been successfully filed. Complaint Number: ' . $complaint_number . '");</script>';
@@ -212,59 +209,63 @@ if (strlen($_SESSION['login']) == 0) {
 
         <!-- Form Modal -->
         <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="formModalLabel">Register Complaint</h5>
-                        <button type="button" class="btn-close-large" data-bs-dismiss="modal" aria-label="Close">×</button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="formModalLabel">Register Complaint</h5>
+                <button type="button" class="btn-close-large" data-bs-dismiss="modal" aria-label="Close">×</button>
+            </div>
+            <div class="modal-body">
+                <form class="form-horizontal style-form" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="location" class="form-label">Location</label>
+                        <input type="text" id="location" name="location" class="form-control" required placeholder="Enter or select location">
                     </div>
-                    <div class="modal-body">
-                        <form class="form-horizontal style-form" method="post" enctype="multipart/form-data">
-                            <div class="mb-3">
-                                <label for="location" class="form-label">Location</label>
-                                <input type="text" id="location" name="location" class="form-control" required placeholder="Enter or select location">
-                            </div>
-                            <div class="mb-3">
-                                <label for="weaponType" class="form-label">Weapon Type</label>
-                                <select name="weaponType" id="weaponType" class="form-control select2" required>
-                                    <option value="">Select Weapon Type</option>
-                                    <?php
-                                    $weaponQuery = mysqli_query($conn, "SELECT * FROM weapons");
-                                    while ($weapon = mysqli_fetch_array($weaponQuery)) {
-                                        echo '<option value="' . $weapon['weapon_type'] . '">' . $weapon['weapon_type'] . ' - ' . $weapon['details'] . '</option>';
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="crimeType" class="form-label">Crime Type</label>
-                                <select name="crimeType" id="crimeType" class="form-control select2" required>
-                                    <option value="">Select Crime Type</option>
-                                    <?php
-                                    $crimeQuery = mysqli_query($conn, "SELECT * FROM crime_types");
-                                    while ($crime = mysqli_fetch_array($crimeQuery)) {
-                                        echo '<option value="' . $crime['crime_type'] . '">' . $crime['crime_type'] . ' - ' . $crime['details'] . '</option>';
-                                    }
-                                    ?>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label for="complaindetails" class="form-label">Complaint Details</label>
-                                <textarea name="complaindetails" id="complaindetails" class="form-control" required rows="5" maxlength="2000"></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label for="compfile" class="form-label">Upload Evidence</label>
-                                <input type="file" name="compfile" id="compfile" class="form-control" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff,video/mp4,video/avi,video/quicktime">
-                                <p id="scanResult" style="color: red; display: none;">Scanning...</p>
-                            </div>
-                            <div class="mb-3 text-end">
-                                <button type="submit" id="submitBtn" name="submit" class="btn btn-primary" disabled>Submit</button>
-                            </div>
-                        </form>
+                    <div class="mb-3">
+                        <label for="weaponType" class="form-label">Weapon Type</label>
+                        <select name="weaponType" id="weaponType" class="form-control select2" required>
+                            <option value="">Select Weapon Type</option>
+                            <?php
+                            $weaponQuery = mysqli_query($conn, "SELECT * FROM weapons");
+                            while ($weapon = mysqli_fetch_array($weaponQuery)) {
+                                echo '<option value="' . $weapon['weapon_type'] . '">' . $weapon['weapon_type'] . ' - ' . $weapon['details'] . '</option>';
+                            }
+                            ?>
+                        </select>
                     </div>
-                </div>
+                    <div class="mb-3">
+                        <label for="crimeType" class="form-label">Crime Type</label>
+                        <select name="crimeType" id="crimeType" class="form-control select2" required>
+                            <option value="">Select Crime Type</option>
+                            <?php
+                            $crimeQuery = mysqli_query($conn, "SELECT * FROM crime_types");
+                            while ($crime = mysqli_fetch_array($crimeQuery)) {
+                                echo '<option value="' . $crime['crime_type'] . '">' . $crime['crime_type'] . ' - ' . $crime['details'] . '</option>';
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="complaindetails" class="form-label">Complaint Details</label>
+                        <textarea name="complaindetails" id="complaindetails" class="form-control" required rows="5" maxlength="2000"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="compfile" class="form-label">Upload Evidence</label>
+                        <input type="file" name="compfile" id="compfile" class="form-control" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff,video/mp4,video/avi,video/quicktime">
+                        <p id="scanResult" style="color: red; display: none;">Scanning...</p>
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="anonymous" name="anonymous">
+                        <label class="form-check-label" for="anonymous">Report Anonymously</label>
+                    </div>
+                    <div class="mb-3 text-end">
+                        <button type="submit" id="submitBtn" name="submit" class="btn btn-primary" disabled>Submit</button>
+                    </div>
+                </form>
             </div>
         </div>
+    </div>
+</div>
     </section>
     <?php include("includes/footer.php"); ?>
 </section>
