@@ -1,5 +1,4 @@
 <?php
-
 include 'users/includes/config.php';
 
 $searchQuery = isset($_GET['search']) ? $_GET['search'] : '';
@@ -45,7 +44,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="shortcut icon" href="users/asset/images/ingat.ico">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -57,8 +55,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
             display: flex;
             flex-direction: column;
         }
-
-        /* Header and Navigation */
         .header-top {
             background-color: #fff;
             padding: 10px 20px;
@@ -88,8 +84,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
             border-bottom: 2px solid #28a745;
             padding-bottom: 5px;
         }
-
-        /* Hero Section */
         .hero-section {
             position: relative;
             height: 300px;
@@ -125,8 +119,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
             color: #F7931E;
             text-transform: uppercase;
         }
-
-        /* Content Section */
         .content {
             flex: 1 0 auto;
             padding: 40px 20px;
@@ -142,8 +134,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
             border-bottom: 2px solid #28a745;
             display: inline-block;
         }
-
-        /* Newsfeed Container */
         .newsfeed-container {
             max-width: 800px;
             margin: 0 auto;
@@ -181,8 +171,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
             line-height: 1.6;
             margin: 0;
         }
-
-        /* Search Bar */
         .search-bar {
             margin-bottom: 20px;
         }
@@ -193,8 +181,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
             border: 1px solid #ddd;
             font-size: 1rem;
         }
-
-        /* Pagination */
         .pagination {
             justify-content: center;
             margin-top: 20px;
@@ -211,13 +197,39 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
             background-color: #F7931E;
             color: #fff;
         }
+        .scroll-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #F7931E;
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease, background-color 0.3s ease;
+        }
+
+        .scroll-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-to-top:hover {
+            background-color: #e07b1a;
+        }
     </style>
 </head>
 <body>
-    <!-- Include header -->
     <?php include 'header.php'; ?>
 
-    <!-- Add a header-top section for navigation if header.php doesn't include it -->
     <div class="header-top">
         <img src="users/asset/images/ingat.ico" alt="INGAT Logo">
         <nav>
@@ -229,7 +241,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
         </nav>
     </div>
 
-    <!-- Hero Section -->
     <div class="hero-section">
         <video autoplay loop muted>
             <source src="img/flag.mp4" type="video/mp4">
@@ -238,11 +249,9 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
         <h1>Published Posts</h1>
     </div>
 
-    <!-- Content Section -->
     <div class="content">
         <h2>Stay Informed</h2>
         <div class="newsfeed-container">
-            <!-- Search Bar -->
             <form method="GET" action="" class="search-bar">
                 <div class="form-group" style="display: flex; align-items: center;">
                     <input type="text" name="search" class="form-control" placeholder="Search posts..." value="<?php echo htmlspecialchars($searchQuery); ?>">
@@ -261,10 +270,9 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
                         <?php if (!empty($row['image'])): ?>
                             <div class="post-image">
                                 <?php
-                                // Resolve the image path
                                 $imagePath = $row['image'];
-                                $absolutePath = realpath($basePath . '/' . ltrim($imagePath, './complaintdocs')); // Convert to absolute path
-                                $webPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $absolutePath); // Convert to web-accessible path
+                                $absolutePath = realpath($basePath . '/' . ltrim($imagePath, './'));
+                                $webPath = str_replace($_SERVER['DOCUMENT_ROOT'], '', $absolutePath);
 
                                 if ($absolutePath && file_exists($absolutePath)) {
                                     echo "<img src='$webPath' alt='Post Image'>";
@@ -281,7 +289,6 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
                 <?php endforeach; ?>
             <?php endif; ?>
 
-            <!-- Pagination links -->
             <?php if ($totalPages > 1): ?>
                 <nav aria-label="Page navigation">
                     <ul class="pagination">
@@ -296,9 +303,28 @@ $basePath = $_SERVER['DOCUMENT_ROOT'] . '/git/ingat/';
         </div>
     </div>
 
-    <!-- Include footer -->
     <?php include 'footer.php'; ?>
-
     <?php $conn->close(); ?>
+    <button class="scroll-to-top" id="scrollToTopBtn">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+    <script>
+        const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                scrollToTopBtn.classList.add('show');
+            } else {
+                scrollToTopBtn.classList.remove('show');
+            }
+        });
+
+        scrollToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
 </body>
 </html>
