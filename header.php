@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-light">
     <div class="container-fluid">
         <!-- Logo -->
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="index.php">
             <img src="img/logo.png" alt="INGAT">
         </a>
 
@@ -20,7 +20,7 @@
                     <a class="nav-link" href="#">Updates</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">About</a>
+                    <a class="nav-link" href="about.php">About</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="map.php">Map</a>
