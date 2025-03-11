@@ -17,7 +17,7 @@
                     <a class="nav-link" href="index.php">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Updates</a>
+                    <a class="nav-link" href="update.php">Updates</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="about.php">About</a>
