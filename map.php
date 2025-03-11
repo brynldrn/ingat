@@ -16,6 +16,7 @@ if ($result->num_rows > 0) {
 }
 
 $locationsJson = json_encode($locations);
+$googleApiKey = getenv('GOOGLE_MAPS_API_KEY');
 ?>
 
 <!DOCTYPE html>
@@ -26,7 +27,7 @@ $locationsJson = json_encode($locations);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Crime Map</title>
 
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=<?= $googleApiKey; ?>"></script>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
