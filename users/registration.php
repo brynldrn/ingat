@@ -383,22 +383,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           <div class="form-row">
             <div class="form-group">
               <label for="firstname" class="form-label required">First Name</label>
-              <input type="text" class="form-control" name="firstname" id="firstname" placeholder="First name" required>
+              <input type="text" class="form-control" name="firstname" id="firstname" placeholder="First name" style="background-color:white; color:rgb(0, 0, 0);" required>
             </div>
             <div class="form-group">
               <label for="middlename" class="form-label">Middle Name (Optional)</label>
-              <input type="text" class="form-control" name="middlename" id="middlename" placeholder="Middle name">
+              <input type="text" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="middlename" id="middlename" placeholder="Middle name">
             </div>
           </div>
           <!-- Second Row: Last Name and Email -->
           <div class="form-row">
             <div class="form-group">
               <label for="lastname" class="form-label required">Last Name</label>
-              <input type="text" class="form-control" name="lastname" id="lastname" placeholder="Last name" required>
+              <input type="text" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="lastname" id="lastname" placeholder="Last name" required>
             </div>
             <div class="form-group">
               <label for="email" class="form-label required">Email Address</label>
-              <input type="email" class="form-control" name="email" id="email" placeholder="Email address" required>
+              <input type="email" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="email" id="email" placeholder="Email address" required>
             </div>
           </div>
           <!-- Third Row: Password and Confirm Password -->
@@ -406,14 +406,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="form-group">
               <label for="password" class="form-label required">Password</label>
               <div class="password-container">
-                <input type="password" class="form-control" name="password" id="password" placeholder="Password" required oninput="validatePassword()">
+                <input type="password" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="password" id="password" placeholder="Password" required oninput="validatePassword()">
                 <i class="fa fa-eye" id="togglePassword1" style="cursor: pointer;"></i>
               </div>
             </div>
             <div class="form-group">
               <label for="repassword" class="form-label required">Confirm Password</label>
               <div class="password-container">
-                <input type="password" class="form-control" name="repassword" id="repassword" placeholder="Confirm password" required oninput="validatePassword()">
+                <input type="password" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="repassword" id="repassword" placeholder="Confirm password" required oninput="validatePassword()">
                 <i class="fa fa-eye" id="togglePassword2" style="cursor: pointer;"></i>
               </div>
             </div>
