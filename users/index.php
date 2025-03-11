@@ -219,12 +219,12 @@ if (isset($_POST['submit'])) {
           <?php endif; ?>
           <div class="mb-3">
             <label for="email" class="form-label">Email Address</label>
-            <input type="email" class="form-control" name="username" id="email" placeholder="Enter your email" required autofocus>
+            <input type="email" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="username" id="email" placeholder="Enter your email" required autofocus>
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <div class="password-container">
-              <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password" required>
+              <input type="password" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="password" id="password" placeholder="Enter your password" required>
               <i class="fa fa-eye" id="togglePassword" style="cursor: pointer;"></i>
             </div>
           </div>
