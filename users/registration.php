@@ -439,51 +439,51 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
   <!-- Modal for Terms of Use -->
   <div id="termsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="background: #fff; width: 90%; max-width: 600px; margin: 5% auto; padding: 20px; border-radius: 8px; position: relative;">
-      <span onclick="closeTermsModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">×</span>
-      <div class="terms-content" style="max-height: 400px; overflow-y: auto; padding: 1rem;">
-        <h1 style="font-size: 22px; margin-bottom: 10px; color: #0092bf;">Terms of Use</h1>
-        <p>Welcome to INGAT (Inform, Navigate, Guard, Act, Together)! By using our platform, you agree to comply with the following Terms of Use. Please read them carefully before accessing or using our system.</p>
-        <h2 style="font-size: 18px; margin-top: 15px;">1. Acceptance of Terms</h2>
-        <p>By accessing and using the INGAT platform, you agree to be bound by these Terms of Use, our Privacy Policy, and any additional guidelines or rules provided within the system. If you do not agree to these terms, you must not use the platform.</p>
-        <h2 style="font-size: 18px; margin-top: 15px;">2. Purpose of the System</h2>
-        <p>INGAT is a platform designed for crime reporting, safety updates, and community engagement. The primary goals are to:</p>
-        <ul style="margin-left:20px;">
-          <li>Allow users to report incidents responsibly.</li>
-          <li>Provide real-time safety information.</li>
-          <li>Foster collaboration among users to promote safety.</li>
-        </ul>
-        <h2 style="font-size: 18px; margin-top: 15px;">3. User Responsibilities</h2>
-        <p>When using the INGAT platform, you agree to:</p>
-        <ul style="margin-left:20px;">
-          <li>Provide accurate and truthful information during registration and reporting.</li>
-          <li>Use the system responsibly and not for malicious, fraudulent, or defamatory purposes.</li>
-          <li>Maintain the confidentiality of your login credentials.</li>
-        </ul>
-        <h2 style="font-size: 18px; margin-top: 15px;">4. Prohibited Activities</h2>
-        <p>You agree not to:</p>
-        <ul style="margin-left:20px;">
-          <li>Submit false or misleading reports.</li>
-          <li>Use the platform for illegal activities, harassment, or threats.</li>
-          <li>Access or attempt to access another user's account without authorization.</li>
-          <li>Distribute malware, spam, or any content that disrupts the platform's functionality.</li>
-          <li>Reverse-engineer, decompile, or disassemble the platform.</li>
-        </ul>
-        <h2 style="font-size: 18px; margin-top: 15px;">5. Reporting Obligations</h2>
-        <p>Reports made on the INGAT system should be genuine and based on real incidents. Users found submitting false reports may have their accounts suspended or terminated and may face legal consequences.</p>
-        <h2 style="font-size: 18px; margin-top: 15px;">6. Privacy and Data Protection</h2>
-        <p>Your use of INGAT is subject to our Privacy Policy, which outlines how your data is collected, used, and protected. By using the system, you consent to the collection and use of your data as described in the Privacy Policy.</p>
-        <h2 style="font-size: 18px; margin-top: 15px;">7. Account Suspension or Termination</h2>
-        <p>INGAT reserves the right to suspend or terminate accounts that violate these terms, engage in prohibited activities, or misuse the platform.</p>
-        <h2 style="font-size: 18px; margin-top: 15px;">8. Limitation of Liability</h2>
-        <p>While INGAT strives to provide accurate and reliable services, we do not guarantee the complete accuracy or timeliness of the information on the platform and are not liable for damages arising from its misuse.</p>
-        <h2 style="font-size: 18px; margin-top: 15px;">9. Updates to Terms</h2>
-        <p>We may update these Terms of Use periodically. Continued use of the system after updates indicates your acceptance of the revised terms.</p>
-        <h2 style="font-size: 18px; margin-top: 15px;">10. Contact Us</h2>
-        <p>If you have questions or concerns about these Terms of Use, please contact us at <strong>ingat.system@gmail.com</strong>.</p>
-      </div>
+  <div style="background: #fff; width: 90%; max-width: 600px; margin: 5% auto; padding: 20px; border-radius: 8px; position: relative; color: black;">
+    <span onclick="closeTermsModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">×</span>
+    <div class="terms-content" style="max-height: 400px; overflow-y: auto; padding: 1rem;">
+      <h1 style="font-size: 22px; margin-bottom: 10px; color: #0092bf;">Terms of Use</h1>
+      <p>Welcome to INGAT (Inform, Navigate, Guard, Act, Together)! By using our platform, you agree to comply with the following Terms of Use. Please read them carefully before accessing or using our system.</p>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">1. Acceptance of Terms</h2>
+      <p>By accessing and using the INGAT platform, you agree to be bound by these Terms of Use, our Privacy Policy, and any additional guidelines or rules provided within the system. If you do not agree to these terms, you must not use the platform.</p>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">2. Purpose of the System</h2>
+      <p>INGAT is a platform designed for crime reporting, safety updates, and community engagement. The primary goals are to:</p>
+      <ul style="margin-left:20px;">
+        <li>Allow users to report incidents responsibly.</li>
+        <li>Provide real-time safety information.</li>
+        <li>Foster collaboration among users to promote safety.</li>
+      </ul>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">3. User Responsibilities</h2>
+      <p>When using the INGAT platform, you agree to:</p>
+      <ul style="margin-left:20px;">
+        <li>Provide accurate and truthful information during registration and reporting.</li>
+        <li>Use the system responsibly and not for malicious, fraudulent, or defamatory purposes.</li>
+        <li>Maintain the confidentiality of your login credentials.</li>
+      </ul>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">4. Prohibited Activities</h2>
+      <p>You agree not to:</p>
+      <ul style="margin-left:20px;">
+        <li>Submit false or misleading reports.</li>
+        <li>Use the platform for illegal activities, harassment, or threats.</li>
+        <li>Access or attempt to access another user's account without authorization.</li>
+        <li>Distribute malware, spam, or any content that disrupts the platform's functionality.</li>
+        <li>Reverse-engineer, decompile, or disassemble the platform.</li>
+      </ul>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">5. Reporting Obligations</h2>
+      <p>Reports made on the INGAT system should be genuine and based on real incidents. Users found submitting false reports may have their accounts suspended or terminated and may face legal consequences.</p>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">6. Privacy and Data Protection</h2>
+      <p>Your use of INGAT is subject to our Privacy Policy, which outlines how your data is collected, used, and protected. By using the system, you consent to the collection and use of your data as described in the Privacy Policy.</p>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">7. Account Suspension or Termination</h2>
+      <p>INGAT reserves the right to suspend or terminate accounts that violate these terms, engage in prohibited activities, or misuse the platform.</p>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">8. Limitation of Liability</h2>
+      <p>While INGAT strives to provide accurate and reliable services, we do not guarantee the complete accuracy or timeliness of the information on the platform and are not liable for damages arising from its misuse.</p>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">9. Updates to Terms</h2>
+      <p>We may update these Terms of Use periodically. Continued use of the system after updates indicates your acceptance of the revised terms.</p>
+      <h2 style="font-size: 18px; margin-top: 15px;color: #0092bf;">10. Contact Us</h2>
+      <p>If you have questions or concerns about these Terms of Use, please contact us at <strong>ingat.system@gmail.com</strong>.</p>
     </div>
   </div>
+</div>
 
   <script src="asset/js/vendor.min.js"></script>
   <script src="asset/js/app.js"></script>
