@@ -1,8 +1,7 @@
 <?php
-// Include database configuration
+
 include_once 'users/includes/config.php';
 
-// Fetch and process data from tblcomplaints
 $query = "SELECT location, COUNT(*) AS count FROM tblcomplaints GROUP BY location";
 $result = $conn->query($query);
 
@@ -17,7 +16,6 @@ if ($result->num_rows > 0) {
     }
 }
 
-// Convert PHP array to JSON for JavaScript
 $locationsJson = json_encode($locations);
 ?>
 
@@ -37,8 +35,7 @@ $locationsJson = json_encode($locations);
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         body {
@@ -47,87 +44,91 @@ $locationsJson = json_encode($locations);
             padding: 0;
             background-color: #E1F7F5;
             color: #1E0342;
-        }
-
-        header {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background-color: #0E46A3;
-            padding: 15px 30px;
-            color: white;
+            flex-direction: column;
+            min-height: 100vh;
         }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
+        .content {
+            flex: 1 0 auto;
+            padding: 60px 0;
+            width: 100%;
+            margin: 0 auto;
         }
 
-        .logo-container img {
-            height: 40px;
-            margin-right: 10px;
-        }
+        .content h2 {
+            
+    text-align: center;
+    text-transform: uppercase;
+    font-size: 1.5rem;
+    color: #333;
+    margin-left: 39%;
+    margin-top: 3%;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #28a745;
+    display: inline-block;
 
-        .logo-container span {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .go-back-btn {
-            background-color: #E1F7F5;
-            color: #0E46A3;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .go-back-btn:hover {
-            background-color: #9AC8CD;
-        }
-
-        h1 {
-            text-align: center;
-            margin: 20px 0;
-            color: #0E46A3;
         }
 
         .dropdown {
-            text-align: center;
-            margin: 20px auto;
-        }
+        text-align: center;
+        margin: 20px auto;
+        position: relative;
+        z-index: 3;
+    }
 
-        .dropdown button {
-            background-color: #0E46A3;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin: 0 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
+    .dropdown button {
+        background: linear-gradient(135deg, #0E46A3, #1E0342);
+        color: #fff;
+        border: none;
+        padding: 12px 24px;
+        margin: 0 10px;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background 0.3s ease, transform 0.2s ease;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
 
-        .dropdown button:hover {
-            background-color: #1E0342;
-            transform: scale(1.05);
-        }
+    .dropdown button:hover {
+        background: #28a745;
+        transform: translateY(-2px);
+    }
+
+    .background-shadow {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: url('users/asset/images/flag_police_badge.png') no-repeat center center;
+        background-size: contain;
+        opacity: 0.08;
+        z-index: 1;
+    }
+
 
         #map {
-            width: 90%;
-            height: 500px;
-            margin: 20px auto;
+            width: 90vw;
+            max-width: none; 
+            height: 700px;
+            margin: 20px auto; 
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index:2;
+        }
+
+        .leaflet-control-fullscreen a {
+            background-color: #fff;
+            border-radius: 4px;
+            padding: 5px;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
         }
 
         @media (max-width: 768px) {
             #map {
-                height: 400px;
+                width: 95vw;
+                height: 500px; 
             }
 
             .dropdown button {
@@ -139,36 +140,50 @@ $locationsJson = json_encode($locations);
 </head>
 
 <body>
- <?php include 'header.php'; ?>
+    <?php include 'header.php'; ?>
 
-    <h1>Crime Map</h1>
+    <div class="content">
+        <h2>Filter Crime Incidents</h2>
+        <div class="dropdown">
+            <button id="filter-high" data-risk="high">High</button>
+            <button id="filter-moderate" data-risk="moderate">Moderate</button>
+            <button id="filter-low" data-risk="low">Low</button>
+        </div>
 
-    <div class="dropdown">
-        <button id="filter-high" data-risk="high">High</button>
-        <button id="filter-moderate" data-risk="moderate">Moderate</button>
-        <button id="filter-low" data-risk="low">Low</button>
+        <div id="map"></div>
     </div>
 
-    <div id="map"></div>
+    <?php include 'footer.php'; ?>
 
- <?php include 'footer.php'; ?>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/2.0.0/Control.FullScreen.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/2.0.0/Control.FullScreen.min.js"></script>
 
     <script>
-        // Set Mapbox access token
+
         mapboxgl.accessToken = 'pk.eyJ1Ijoib3Jlb2hvbGljIiwiYSI6ImNtMWFwdnR6bzF2c2QycXM4aW54Nmkxa3MifQ.0YVnZngmFw98M9yv9ZfFRw';
 
-        // Initialize map
+ 
         const map = L.map('map').setView([14.59, 121.02], 8);
 
-        // Add Mapbox tiles
-        L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapboxgl.accessToken}`).addTo(map);
+ 
+        L.tileLayer(`https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=${mapboxgl.accessToken}`, {
+            attribution: '© <a href="https://www.mapbox.com/about/maps/">Mapbox</a>'
+        }).addTo(map);
 
-        // Locations data from PHP
+
+        map.addControl(new L.Control.FullScreen());
+
+
+        L.control.zoom({
+            position: 'topright'
+        }).addTo(map);
+
+
         const locations = <?= $locationsJson; ?>;
         let markers = [];
 
-        // Function to add markers to map
+
         async function addMarkers(filteredLocations) {
             markers.forEach(marker => map.removeLayer(marker));
             markers = [];
@@ -200,10 +215,10 @@ $locationsJson = json_encode($locations);
             }
         }
 
-        // Add markers initially
+    
         addMarkers(locations);
 
-        // Filter buttons
+
         document.querySelectorAll('.dropdown button').forEach(button => {
             button.addEventListener('click', async () => {
                 const riskLevel = button.getAttribute('data-risk');
