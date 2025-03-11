@@ -36,6 +36,10 @@ $locationsJson = json_encode($locations);
     <!-- Mapbox Script and Styles -->
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
     <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -135,13 +139,7 @@ $locationsJson = json_encode($locations);
 </head>
 
 <body>
-    <header>
-        <div class="logo-container">
-            <img src="users/asset/images/ingat.ico" alt="INGAT Logo">
-            <span>INGAT</span>
-        </div>
-        <a href="index.php" class="go-back-btn">Go Back</a>
-    </header>
+ <?php include 'header.php'; ?>
 
     <h1>Crime Map</h1>
 
@@ -153,13 +151,7 @@ $locationsJson = json_encode($locations);
 
     <div id="map"></div>
 
-    <footer style="background-color: #003366; color: #ffffff; padding: 10px 0; text-align: center; margin-top: 20px;">
-    <p style="margin: 0;">&copy; <?php echo date("Y"); ?> INGAT - Community Safety Portal. All rights reserved.</p>
-    <nav style="margin: 5px 0;">
-        <a href="#" style="color: #ffffff; text-decoration: none; margin: 0 15px; font-size: 0.9em;">Privacy Policy</a>
-        <a href="#" style="color: #ffffff; text-decoration: none; margin: 0 15px; font-size: 0.9em;">Terms of Service</a>
-    </nav>
-</footer>
+ <?php include 'footer.php'; ?>
 
 
     <script>
