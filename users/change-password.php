@@ -26,7 +26,7 @@ if(strlen($_SESSION['login'])==0) {
             
             if($updateQuery) {
                 // Send reset password email
-                $resetLink = "http://localhost/inform/users/reset-password.php?token=$token";
+                $resetLink = "https://ingat-web-php-7q7ei.ondigitalocean.app/users/reset-password.php?token=$token";
                 $subject = "Password Reset Request";
 
                 $message = "

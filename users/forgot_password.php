@@ -27,7 +27,7 @@ if (isset($_POST['submit'])) {
 
         if ($updateQuery) {
             // Prepare the reset link and email subject
-            $resetLink = "http://localhost/inform/users/reset-password.php?token=$token";
+            $resetLink = "https://ingat-web-php-7q7ei.ondigitalocean.app/users/reset-password.php?token=$token";
             $subject = "Password Reset Request";
 
             // Build the HTML email content
