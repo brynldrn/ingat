@@ -36,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    $maxFileSize = 10 * 1024 * 1024;
+    $maxFileSize = 50 * 1024 * 1024;
     $target_dir = "complaintdocs/";
     $complaint_files = [];
     $allowedImageTypes = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'];
