@@ -311,7 +311,7 @@
     <section class="download-section">
     <h2>Download INGAT Mobile App</h2>
     <p>Access community safety features anytime, anywhere with our mobile application. Stay connected with real-time incident reports and alerts on the go.</p>
-    <a href="https://github.com/elaizakriselle/ingat/releases/download/alpha-1.1.0/build-1741099535010.apk" class="download-btn" download="INGAT-App.apk">
+    <a href="https://github.com/elaizakriselle/ingat/releases/download/alpha-1.2.0/app-release.apk" class="download-btn" download="INGAT-App.apk">
         <i class="fas fa-download"></i> Download APK
     </a>
     <a href="#" class="download-btn" data-bs-toggle="modal" data-bs-target="#demoModal">
