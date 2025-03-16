@@ -448,7 +448,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
   <div class="login-container">
     <div class="left-section">
-      <img src="asset/images/logodark.png" alt="INGAT Logo">
+      <img src="asset/images/ingat_logo.png" alt="INGAT Logo">
       <p>INGAT<br>Inform - Navigate - Guard - Act - Together</p>
     </div>
     <div class="right-section">
