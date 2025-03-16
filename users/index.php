@@ -43,6 +43,7 @@ if (isset($_POST['submit'])) {
         $errormsg = "Invalid username or password.";
     }
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -81,27 +82,42 @@ if (isset($_POST['submit'])) {
       width: 100%;
       max-width: 1200px;
       height: 100vh;
-      flex-direction: row; /* Default for desktop */
     }
     .left-section {
       flex: 1;
-      background: linear-gradient(135deg, #4a90e2, #63b8ff);
+      background: url('../img/pnp.jpeg') center/cover no-repeat;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       color: #fff;
       padding: 2rem;
-      margin-left: -10%; /* Adjusted for desktop */
+      padding-left: 3rem;
+      position: relative; 
+      margin-left: -10%;
+    }
+    .left-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5); 
+      z-index: 1; 
     }
     .left-section img {
       max-width: 150px;
       margin-bottom: 1rem;
+      position: relative;
+      z-index: 2;
     }
     .left-section p {
       text-align: center;
       font-size: 1.1rem;
       margin: 0;
+      position: relative;
+      z-index: 2; 
     }
     .right-section {
       flex: 1;
@@ -199,58 +215,80 @@ if (isset($_POST['submit'])) {
       padding: 0.75rem;
       margin-bottom: 1rem;
       border-radius: 0.25rem;
-    }
-
-   
+    }/* Mobile Responsiveness */
     @media (max-width: 768px) {
       .login-container {
-        flex-direction: column; 
-        height: auto; 
-        padding: 1rem; 
+        flex-direction: column; /* Stack vertically on mobile */
+        height: auto; /* Allow height to adjust */
+        padding: 1rem;
       }
       .left-section {
         flex: none;
         width: 100%;
         padding: 1rem;
-        margin-left: 0;
+        margin-left: 0; /* Remove negative margin */
         min-height: 200px;
       }
       .left-section img {
-        max-width: 120px; 
+        max-width: 120px; /* Smaller logo */
       }
       .left-section p {
-        font-size: 0.9rem;
+        font-size: 0.9rem; /* Smaller text */
       }
       .right-section {
-        flex: none; 
+        flex: none;
         width: 100%;
         padding: 1rem;
       }
       .card {
-        max-width: 100%;
-        padding: 1.5rem; 
+        max-width: 100%; /* Full width on mobile */
+        padding: 1.5rem;
       }
       .card-title {
-        font-size: 1.25rem; 
+        font-size: 1.25rem; /* Smaller title */
       }
       .card-subtitle {
-        font-size: 0.85rem;
+        font-size: 0.85rem; /* Smaller subtitle */
+      }
+      .form-row {
+        flex-direction: column; /* Stack form fields vertically */
+        gap: 0;
+      }
+      .form-group {
+        margin-bottom: 1rem;
       }
       .form-control {
-        font-size: 0.9rem; 
+        font-size: 0.9rem; /* Slightly smaller input text */
       }
       .btn-primary {
-        padding: 0.6rem; 
+        padding: 0.6rem; /* Smaller button */
+        font-size: 0.9rem;
+      }
+      .terms-container {
+        margin-bottom: 1rem;
+      }
+      /* Modal adjustments */
+      #termsModal > div {
+        width: 95%; /* Wider on small screens */
+        margin: 10% auto;
+        padding: 15px;
+      }
+      .terms-content {
+        max-height: 300px; /* Smaller modal height */
         font-size: 0.9rem;
       }
     }
 
+    /* Tablets (optional intermediate step) */
     @media (min-width: 769px) and (max-width: 991px) {
       .login-container {
-        max-width: 800px; 
+        max-width: 800px;
       }
       .left-section, .right-section {
         padding: 1.5rem;
+      }
+      .card {
+        max-width: 450px;
       }
     }
   </style>

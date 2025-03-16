@@ -38,12 +38,12 @@ else {
     <!-- Theme Config js -->
     <script src="assets/js/config.js"></script>
     <style>
-          table.dataTable tbody tr:nth-child(2n+1) {
-  background-color:rgba(238, 237, 235, 0.03);
-}
-table.dataTable tbody tr {
-  background-color:rgba(255, 255, 255, 0.07);
-}
+        table.dataTable tbody tr:nth-child(2n+1) {
+            background-color:rgba(238, 237, 235, 0.03);
+        }
+        table.dataTable tbody tr {
+            background-color:rgba(255, 255, 255, 0.07);
+        }
 
         .dataTables_wrapper .dataTables_length, 
         .dataTables_wrapper .dataTables_filter, 
@@ -70,7 +70,6 @@ table.dataTable tbody tr {
                 margin-top: 2%;
             }
         }
-       
     </style>
 </head>
 <body>
@@ -106,7 +105,14 @@ table.dataTable tbody tr {
                         </thead>
                         <tbody>
                         <?php 
-$query = mysqli_query($conn, "SELECT c.complaint_number, u.firstname, u.middlename, u.lastname, c.registered_at, c.anonymous FROM tblcomplaints c JOIN users u ON u.id = c.userId WHERE c.status IS NULL AND c.userId IS NOT NULL AND c.crime_type_id IS NOT NULL AND c.weapon_id IS NOT NULL LIMIT 0, 25;");
+$query = mysqli_query($conn, "SELECT c.complaint_number, u.firstname, u.middlename, u.lastname, c.registered_at, c.anonymous 
+                              FROM tblcomplaints c 
+                              LEFT JOIN users u ON u.id = c.userId 
+                              WHERE c.status IS NULL 
+                              AND (c.userId IS NOT NULL OR c.anonymous = 1) 
+                              AND c.crime_type_id IS NOT NULL 
+                              AND c.weapon_id IS NOT NULL 
+                              LIMIT 0, 25;");
 if (mysqli_num_rows($query) > 0) {
     while ($row = mysqli_fetch_array($query)) {
         $date = new DateTime($row['registered_at']);
@@ -139,7 +145,6 @@ if (mysqli_num_rows($query) > 0) {
             </div>
         </div>
     </div>
-
 
 <?php include('include/footer.php'); ?>
 

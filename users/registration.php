@@ -203,23 +203,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
     .left-section {
       flex: 1;
-      background: linear-gradient(135deg, #4a90e2, #63b8ff);
+      background: url('../img/pnp.jpeg') center/cover no-repeat;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       color: #fff;
       padding: 2rem;
+      padding-left: 3rem;
+      position: relative; /* Enable positioning for overlay */
       margin-left: -10%;
+    }
+    .left-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5); /* Darker overlay: 50% black */
+      z-index: 1; /* Place overlay behind content */
     }
     .left-section img {
       max-width: 150px;
       margin-bottom: 1rem;
+      position: relative;
+      z-index: 2; /* Above overlay */
     }
     .left-section p {
       text-align: center;
       font-size: 1.1rem;
       margin: 0;
+      position: relative;
+      z-index: 2; /* Above overlay */
     }
     .right-section {
       flex: 1;
