@@ -4,17 +4,19 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 include("includes/config.php");
 
+// Redirect if user is not logged in
 if (!isset($_SESSION['login'])) {
     header("Location: index.php");
     exit();
 }
 
+// Fetch user ID if not set in session
 if (!isset($_SESSION['userId'])) {
     $email = mysqli_real_escape_string($conn, $_SESSION['login']);
     $user_query = "SELECT id FROM users WHERE user_email = '$email' LIMIT 1";
     $user_result = mysqli_query($conn, $user_query);
-    $user = mysqli_fetch_assoc($user_result);
-    if ($user) {
+    if ($user_result && mysqli_num_rows($user_result) > 0) {
+        $user = mysqli_fetch_assoc($user_result);
         $_SESSION['userId'] = $user['id'];
     } else {
         header("Location: logout.php");
@@ -22,6 +24,37 @@ if (!isset($_SESSION['userId'])) {
     }
 }
 
+// Time difference calculation function
+function facebook_time_ago($timestamp) {
+    $time_ago = strtotime($timestamp);
+    $current_time = time();
+    $time_difference = $current_time - $time_ago;
+    $seconds = $time_difference;
+    $minutes = round($seconds / 60);     
+    $hours = round($seconds / 3600);      
+    $days = round($seconds / 86400);         
+    $weeks = round($seconds / 604800);      
+    $months = round($seconds / 2629440);    
+    $years = round($seconds / 31553280);    
+
+    if ($seconds <= 60) {
+        return "Just Now";
+    } elseif ($minutes <= 60) {
+        return $minutes == 1 ? "one minute ago" : "$minutes minutes ago";
+    } elseif ($hours <= 24) {
+        return $hours == 1 ? "an hour ago" : "$hours hrs ago";
+    } elseif ($days <= 7) {
+        return $days == 1 ? "yesterday" : "$days days ago";
+    } elseif ($weeks <= 4.3) {
+        return $weeks == 1 ? "a week ago" : "$weeks weeks ago";
+    } elseif ($months <= 12) {
+        return $months == 1 ? "a month ago" : "$months months ago";
+    } else {
+        return $years == 1 ? "one year ago" : "$years years ago";
+    }
+}
+
+// Handle search query
 $search_placeholder = "Search reports...";
 $search_value = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['search_query'])) {
@@ -45,19 +78,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['search_query'])) {
     }
 }
 
+// Fetch user image
 $userId = mysqli_real_escape_string($conn, $_SESSION['userId']);
 $user_query = "SELECT user_image FROM users WHERE id = '$userId'";
 $user_result = mysqli_query($conn, $user_query);
 $user_data = mysqli_fetch_assoc($user_result);
 $user_image = $user_data['user_image'] ?? '../img/3.png'; 
 
-
+// Fetch recent complaints
 if (!isset($_SESSION['anonymous_complaint_ids'])) {
     $_SESSION['anonymous_complaint_ids'] = [];
 }
 $anonymous_complaint_ids = array_map('mysqli_real_escape_string', array_fill(0, count($_SESSION['anonymous_complaint_ids']), $conn), $_SESSION['anonymous_complaint_ids']);
 $anonymous_complaint_ids_list = empty($anonymous_complaint_ids) ? "''" : "'" . implode("','", $anonymous_complaint_ids) . "'";
-
 
 $recent_complaints_query = "SELECT complaint_number, status, registered_at, last_updated_at, is_read 
                            FROM tblcomplaints 
@@ -67,6 +100,7 @@ $recent_complaints_query = "SELECT complaint_number, status, registered_at, last
 $recent_complaints_result = mysqli_query($conn, $recent_complaints_query);
 $recent_complaints = mysqli_fetch_all($recent_complaints_result, MYSQLI_ASSOC);
 
+// Fetch latest complaint
 $latest_complaint_number = isset($_SESSION['latest_complaint_number']) ? $_SESSION['latest_complaint_number'] : null;
 if ($latest_complaint_number) {
     $latest_query = "SELECT complaint_number, status, registered_at, last_updated_at, is_read 
@@ -81,6 +115,7 @@ if ($latest_complaint_number) {
     unset($_SESSION['latest_complaint_number']); 
 }
 
+// Prepare notifications
 $notification_count = 0;
 $notification_messages = [];
 $processed_complaints = []; 
@@ -92,25 +127,8 @@ foreach ($recent_complaints as $complaint) {
     if ($complaint['is_read']) continue;
 
     $status = $complaint['status'] ?? 'Null';
-    $updated_at = $status === 'Null' ? strtotime($complaint['registered_at']) : strtotime($complaint['last_updated_at']);
-    $current_time = time(); // Current server time in seconds
-    $time_diff = $current_time - $updated_at; // Difference in seconds
-
-    // More granular and accurate time calculation
-    if ($time_diff < 10) {
-        $time_ago = "just now"; // Less than 10 seconds
-    } elseif ($time_diff < 60) {
-        $time_ago = $time_diff . " sec ago"; // 10-59 seconds
-    } elseif ($time_diff < 3600) {
-        $minutes = floor($time_diff / 60);
-        $time_ago = $minutes . " min" . ($minutes > 1 ? "s" : "") . " ago"; // 1-59 minutes
-    } elseif ($time_diff < 86400) {
-        $hours = floor($time_diff / 3600);
-        $time_ago = $hours . " hour" . ($hours > 1 ? "s" : "") . " ago"; // 1-23 hours
-    } else {
-        $days = floor($time_diff / 86400);
-        $time_ago = $days . " day" . ($days > 1 ? "s" : "") . " ago"; // 1+ days
-    }
+    $updated_at = $status === 'Null' ? $complaint['registered_at'] : $complaint['last_updated_at'];
+    $time_ago = facebook_time_ago($updated_at);
 
     $message = '';
     switch ($status) {
@@ -132,9 +150,10 @@ foreach ($recent_complaints as $complaint) {
             'complaint_number' => $complaint_number
         ];
         $notification_count++;
-     }
+    }
 }
 ?>
+
 
 <style>
     .notification-dropdown .dropdown-menu {
