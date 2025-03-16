@@ -51,6 +51,11 @@ if (strlen($_SESSION['login']) == 0) {
 ?>
 
 <?php include "plugins-header.php"; ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <!-- App icon -->
+     <link rel="shortcut icon" href="asset/images/ingat.ico"></head>
 <body>
     <?php include "header.php"; ?>
     <div class="container-fluid px-1 py-4">

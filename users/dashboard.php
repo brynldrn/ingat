@@ -21,6 +21,11 @@ if ($locationResult->num_rows > 0) {
 $locationsJson = json_encode($locations);
 $googleApiKey = 'AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M';
 ?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <!-- App icon -->
+     <link rel="shortcut icon" href="asset/images/ingat.ico"></head>
 <body>
     <?php include "header.php";?>
     <div class="container-fluid px-1 py-4">
