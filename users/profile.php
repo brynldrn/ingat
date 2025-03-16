@@ -114,7 +114,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
     $userExists = true;
 }
 ?>
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+     <!-- App icon -->
+     <link rel="shortcut icon" href="asset/images/ingat.ico"></head>
 <style>
     .upload-label {
         display: inline-flex;
