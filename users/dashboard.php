@@ -48,72 +48,12 @@ $googleApiKey = 'AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M';
                 </div>
                 <?php endwhile; ?>
             </div>
-            <div class="col-12 col-lg-4 pb-4">
-                <div class="bg-white p-3 shadow-sm border rounded-2">
-                    <div id="map" style="width: 100%; height: 400px;"></div>
-                </div>
-            </div>
         </div>
     </div>
 </body>
 
 <?php include "plugins-footer.php";?>
-
-<style>
-    #map {
-        width: 100%;
-        height: 400px;
-    }
-
-    @media (max-width: 768px) {
-        #map {
-            height: 300px;
-        }
-    }
-</style>
-
-<script src="https://maps.googleapis.com/maps/api/js?key=<?php echo $googleApiKey; ?>"></script>
-<script>
-    const map = new google.maps.Map(document.getElementById('map'), {
-        center: { lat: 14.750564, lng: 121.051379 },
-        zoom: 12,
-        mapTypeId: 'roadmap'
-    });
-
-    const locations = <?php echo $locationsJson; ?>;
-    let markers = [];
-
-    locations.forEach(location => {
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: location.location }, (results, status) => {
-            if (status === 'OK' && results[0]) {
-                const coords = results[0].geometry.location;
-
-                const pinColor = location.count > 2 ? 'red' : (location.count === 2 ? 'yellow' : 'green');
-                const icon = {
-                    url: `https://maps.google.com/mapfiles/ms/icons/${pinColor}-dot.png`,
-                    scaledSize: new google.maps.Size(32, 32)
-                };
-
-                const marker = new google.maps.Marker({
-                    position: coords,
-                    map: map,
-                    icon: icon,
-                    title: location.location
-                });
-
-                const infowindow = new google.maps.InfoWindow({
-                    content: `<b>${location.location}</b><br>${location.count} incidents`
-                });
-
-                marker.addListener('click', () => {
-                    infowindow.open(map, marker);
-                });
-
-                markers.push(marker);
-            } else {
-                console.error(`Geocode was not successful for the following reason: ${status}`);
-            }
-        });
-    });
-</script>
+<style>.mx-0 {
+    margin-right: 10 !important;
+    margin-left: 10 !important;
+}</style>
