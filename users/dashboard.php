@@ -50,7 +50,7 @@ $googleApiKey = 'AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M';
             </div>
             <div class="col-12 col-lg-4 pb-4">
                 <div class="bg-white p-3 shadow-sm border rounded-2">
-                    <div id="map" style="width: 100%; height: 400px;"></div>
+                    <div id="map" style="width: 100%; height: 100%;"></div>
                 </div>
             </div>
         </div>
