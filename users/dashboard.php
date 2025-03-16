@@ -50,7 +50,7 @@ $googleApiKey = 'AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M';
             </div>
             <div class="col-12 col-lg-4 pb-4">
                 <div class="bg-white p-3 shadow-sm border rounded-2">
-                    <div id="map" style="width: 100%; height: 100%;"></div>
+                    <div id="map"></div>
                 </div>
             </div>
         </div>
@@ -62,12 +62,26 @@ $googleApiKey = 'AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M';
 <style>
     #map {
         width: 100%;
-        height: 400px;
+        height: 60vh; 
+        min-height: 300px;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 991px) {
         #map {
-            height: 300px;
+            height: 300px; 
+        }
+    }
+
+
+    @media (min-width: 992px) {
+        .col-lg-4 {
+            height: calc(100vh - 120px);
+        }
+        .col-lg-4 .bg-white {
+            height: 100%; 
+        }
+        #map {
+            height: 100%; 
         }
     }
 </style>
