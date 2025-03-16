@@ -8,7 +8,7 @@ if (strlen($_SESSION['login']) == 0) {
     exit; 
 } else {  
    
-    $userId = $_SESSION['id'];
+    $userId = $_SESSION['userId']; // Changed from $_SESSION['id']
     
     if (!is_numeric($userId)) {
         die("Invalid session data. Please login again.");
@@ -179,6 +179,5 @@ if (strlen($_SESSION['login']) == 0) {
         </div>
     </div>
 </body>
-
 <?php include "plugins-footer.php"; ?>
 <?php } ?>

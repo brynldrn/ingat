@@ -146,6 +146,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             $_SESSION['anonymous_complaint_ids'][] = $complaint_number;
         }
+        $_SESSION['latest_complaint_number'] = $complaint_number; 
         echo '<script>alert("Your complaint has been successfully filed. Complaint Number: ' . $complaint_number . '"); window.location.href="status.php";</script>';
     } else {
         echo '<script>alert("Failed to register complaint. Please try again."); window.history.back();</script>';
