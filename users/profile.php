@@ -28,6 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
     $contact_no = filter_input(INPUT_POST, 'contact_no', FILTER_SANITIZE_STRING);
     $address = filter_input(INPUT_POST, 'address', FILTER_SANITIZE_STRING);
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
+    $remove_profile = filter_input(INPUT_POST, 'remove_profile', FILTER_SANITIZE_STRING);
+    $remove_id = filter_input(INPUT_POST, 'remove_id', FILTER_SANITIZE_STRING);
 
     // Handle file uploads
     $uploadDir = "../uploads/";
@@ -37,23 +39,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
 
     // Profile image handling
     $user_image = $userExists && !empty($row['user_image']) ? $row['user_image'] : '';
-    if (!empty($_FILES['profile_img']['name'])) {
+    if ($remove_profile === 'true' && $user_image && file_exists($user_image)) {
+        unlink($user_image);
+        $user_image = '';
+    } elseif (!empty($_FILES['profile_img']['name'])) {
+        if ($user_image && file_exists($user_image)) {
+            unlink($user_image);
+        }
         $user_image = $uploadDir . basename($_FILES['profile_img']['name']);
         $user_imageTemp = $_FILES['profile_img']['tmp_name'];
         if (!move_uploaded_file($user_imageTemp, $user_image)) {
             $errormsg = "Failed to upload profile photo!";
-            $user_image = $userExists && !empty($row['user_image']) ? $row['user_image'] : '';
+            $user_image = '';
         }
     }
 
     // ID upload handling
     $upload_id = $userExists && !empty($row['upload_id']) ? $row['upload_id'] : '';
-    if (!empty($_FILES['upload_id']['name'])) {
+    if ($remove_id === 'true' && $upload_id && file_exists($upload_id)) {
+        unlink($upload_id);
+        $upload_id = '';
+    } elseif (!empty($_FILES['upload_id']['name'])) {
+        if ($upload_id && file_exists($upload_id)) {
+            unlink($upload_id);
+        }
         $upload_id = $uploadDir . basename($_FILES['upload_id']['name']);
         $upload_idTemp = $_FILES['upload_id']['tmp_name'];
         if (!move_uploaded_file($upload_idTemp, $upload_id)) {
             $errormsg = "Failed to upload ID!";
-            $upload_id = $userExists && !empty($row['upload_id']) ? $row['upload_id'] : '';
+            $upload_id = '';
         }
     }
 
@@ -159,6 +173,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
 
             <div class="col-12">
                 <form id="profile-form" method="post" action="" enctype="multipart/form-data" class="rounded-2 shadow-sm bg-white">
+                    <input type="hidden" name="remove_profile" id="remove_profile" value="false">
+                    <input type="hidden" name="remove_id" id="remove_id" value="false">
+                    
                     <div class="position-relative rounded-top-2" style="background-color: var(--blue); height: 170px;">
                         <div id="change-image" class="position-absolute" style="top: 80px; left: 30px;">
                             <img src="<?php echo $userExists && !empty($row['user_image']) ? htmlspecialchars($row['user_image']) : '../img/3.png'; ?>" 
@@ -263,7 +280,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                                             <strong>Upload ID</strong>
                                             <div class="d-flex flex-column flex-lg-row align-items-center column-gap-3 mt-3">
                                                 <div>
-                                                    <img src="<?php echo $userExists && !empty($row['upload_id']) ? htmlspecialchars($row['upload_id']) : '../img/id-placeholder.png'; ?>" 
+                                                    <img src="<?php echo $userExists && !empty($row['upload_id']) ? htmlspecialchars($row['upload_id']) : '../img/3.png'; ?>" 
                                                          width="100" height="auto" class="bg-white rounded border" id="id-preview">
                                                 </div>
                                                 <div>
@@ -310,6 +327,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
         const idPreview = document.getElementById('id-preview');
         const removeImageBtn = document.getElementById('remove-image');
         const removeIdBtn = document.getElementById('remove-id');
+        const removeProfileInput = document.getElementById('remove_profile');
+        const removeIdInput = document.getElementById('remove_id');
 
         // Store original values
         const originalValues = {};
@@ -321,7 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
 
         function checkForChanges() {
             let hasChanges = false;
-            form.querySelectorAll('input').forEach(input => {
+            form.querySelectorAll('input:not([type="file"])').forEach(input => {
                 if (input.value !== originalValues[input.id] && !input.readOnly) {
                     hasChanges = true;
                 }
@@ -344,6 +363,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                 reader.onload = function(e) {
                     profilePreview.src = e.target.result;
                     profilePreviewSmall.src = e.target.result;
+                    removeProfileInput.value = 'false';
                     checkForChanges();
                 };
                 reader.readAsDataURL(this.files[0]);
@@ -355,6 +375,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     idPreview.src = e.target.result;
+                    removeIdInput.value = 'false';
                     checkForChanges();
                 };
                 reader.readAsDataURL(this.files[0]);
@@ -362,18 +383,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
         });
 
         removeImageBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to remove your profile photo?')) {
+            if (confirm('Are you sure you want to remove your profile photo? This will be saved when you click "Save Changes".')) {
                 profilePreview.src = '../img/3.png';
                 profilePreviewSmall.src = '../img/3.png';
                 profileImg.value = '';
+                removeProfileInput.value = 'true';
                 checkForChanges();
             }
         });
 
         removeIdBtn.addEventListener('click', function() {
-            if (confirm('Are you sure you want to remove your ID?')) {
-                idPreview.src = '../img/id-placeholder.png';
+            if (confirm('Are you sure you want to remove your ID? This will be saved when you click "Save Changes".')) {
+                idPreview.src = '../img/3.png';
                 uploadId.value = '';
+                removeIdInput.value = 'true';
                 checkForChanges();
             }
         });
@@ -388,7 +411,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                 idPreview.src = originalValues['upload_id'];
                 profileImg.value = '';
                 uploadId.value = '';
+                removeProfileInput.value = 'false';
+                removeIdInput.value = 'false';
                 checkForChanges();
+            }
+        });
+
+        form.addEventListener('submit', function() {
+            if (profilePreview.src === '../img/3.png' && originalValues['profile_img'] !== '../img/3.png') {
+                removeProfileInput.value = 'true';
+            }
+            if (idPreview.src === '../img/3.png' && originalValues['upload_id'] !== '../img/3.png') {
+                removeIdInput.value = 'true';
             }
         });
 
