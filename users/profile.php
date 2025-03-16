@@ -1,7 +1,7 @@
 <?php 
 session_start();
 include "plugins-header.php";
-include('includes/config.php'); // Assuming this contains your database connection
+include('includes/config.php');
 
 // Check if user is logged in
 if (strlen($_SESSION['login']) == 0) {
@@ -29,12 +29,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
     $address = filter_input(INPUT_POST, 'address', FILTER_SANITIZE_STRING);
     $email = filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL);
 
-    // Handle file upload
+    // Handle file uploads
     $uploadDir = "../uploads/";
     if (!is_dir($uploadDir)) {
         mkdir($uploadDir, 0755, true);
     }
 
+    // Profile image handling
     $user_image = $userExists && !empty($row['user_image']) ? $row['user_image'] : '';
     if (!empty($_FILES['profile_img']['name'])) {
         $user_image = $uploadDir . basename($_FILES['profile_img']['name']);
@@ -42,6 +43,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
         if (!move_uploaded_file($user_imageTemp, $user_image)) {
             $errormsg = "Failed to upload profile photo!";
             $user_image = $userExists && !empty($row['user_image']) ? $row['user_image'] : '';
+        }
+    }
+
+    // ID upload handling
+    $upload_id = $userExists && !empty($row['upload_id']) ? $row['upload_id'] : '';
+    if (!empty($_FILES['upload_id']['name'])) {
+        $upload_id = $uploadDir . basename($_FILES['upload_id']['name']);
+        $upload_idTemp = $_FILES['upload_id']['tmp_name'];
+        if (!move_uploaded_file($upload_idTemp, $upload_id)) {
+            $errormsg = "Failed to upload ID!";
+            $upload_id = $userExists && !empty($row['upload_id']) ? $row['upload_id'] : '';
         }
     }
 
@@ -56,6 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
             contact_no = '$contact_no',
             address = '$address',
             user_image = '$user_image',
+            upload_id = '$upload_id',
             updation_date = '$currentTime'
             WHERE user_email = '$email'";
         
@@ -68,10 +81,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
         // Insert new record
         $insertQuery = "INSERT INTO users (
             firstname, middlename, lastname, suffix, username, 
-            contact_no, address, user_email, user_image, creation_date
+            contact_no, address, user_email, user_image, upload_id, creation_date
         ) VALUES (
             '$firstName', '$middleName', '$lastName', '$suffix', '$username',
-            '$contact_no', '$address', '$email', '$user_image', '$currentTime'
+            '$contact_no', '$address', '$email', '$user_image', '$upload_id', '$currentTime'
         )";
         
         if (mysqli_query($conn, $insertQuery)) {
@@ -89,10 +102,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
 ?>
 
 <style>
-    /* ... Your existing styles remain unchanged ... */
+    .upload-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #fff;
+        color: #000;
+        font-size: 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        border: 1px solid var(--gray);
+        transition: background 0.3s;
+    }
+
+    .upload-label:hover {
+        background-color: #0056b3;
+        color: white;
+    }
+
+    .upload-label i {
+        font-size: 16px;
+    }
+
+    #profile_img, #upload_id {
+        display: none;
+    }
+
     .disabled-btn {
         pointer-events: none;
         opacity: 0.6;
+    }
+
+    .upload-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+        justify-content: space-between;
+    }
+
+    .upload-section {
+        flex: 1;
+        min-width: 300px;
     }
 </style>
 
@@ -117,6 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                     </div>
                     <div class="py-4 px-lg-3 mt-5">
                         <div class="mt-4 row mx-0">
+                            <!-- Existing form fields remain the same -->
                             <div class="col-12 col-lg-6 row mx-0 row-gap-4 mb-3 mb-lg-0">
                                 <div class="col-12">
                                     <div class="form-floating">
@@ -125,7 +176,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                                         <label for="firstname">First Name</label>
                                     </div>
                                 </div>
-                                <!-- ... Other form fields remain similar, just add value attributes ... -->
                                 <div class="col-12">
                                     <div class="form-floating">
                                         <input required type="text" name="middlename" id="middlename" class="form-control rounded-1" 
@@ -159,7 +209,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                                         </div>
                                     </div>
                                 </div>
-                                <!-- ... Other fields ... -->
                                 <div class="col-12">
                                     <div class="input-group">
                                         <span class="input-group-text" id="basic-addon1">+63</span>
@@ -188,22 +237,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                             </div>
 
                             <div class="col-12 pb-4 mt-4">
-                                <div class="d-flex flex-column row-gap-3 rounded-2 shadow-sm bg-white p-4">
-                                    <strong>Profile Photo</strong>
-                                    <div class="d-flex flex-column flex-lg-row align-items-center column-gap-3">
-                                        <div>
-                                            <img src="<?php echo $userExists && !empty($row['user_image']) ? htmlspecialchars($row['user_image']) : '../img/3.png'; ?>" 
-                                                 width="100" height="auto" class="bg-white rounded-circle border" id="profile-preview-small">
+                                <div class="rounded-2 shadow-sm bg-white p-4">
+                                    <div class="upload-container">
+                                        <div class="upload-section">
+                                            <strong>Profile Photo</strong>
+                                            <div class="d-flex flex-column flex-lg-row align-items-center column-gap-3 mt-3">
+                                                <div>
+                                                    <img src="<?php echo $userExists && !empty($row['user_image']) ? htmlspecialchars($row['user_image']) : '../img/3.png'; ?>" 
+                                                         width="100" height="auto" class="bg-white rounded-circle border" id="profile-preview-small">
+                                                </div>
+                                                <div>
+                                                    <p class="text-center">Upload a new profile photo. Recommended size is 400x400px.</p>
+                                                    <div class="d-flex align-items-center justify-content-center justify-content-lg-start column-gap-2">
+                                                        <label for="profile_img" class="upload-label px-2 py-1">
+                                                            <i class="ri-camera-line"></i>
+                                                            <span>Upload New</span>
+                                                        </label>
+                                                        <input type="file" name="profile_img" id="profile_img" accept="image/*">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" id="remove-image">Remove</button>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p class="text-center">Upload a new profile photo. Recommended size is 400x400px.</p>
-                                            <div class="d-flex align-items-center justify-content-center justify-content-lg-start column-gap-2">
-                                                <label for="profile_img" class="upload-label px-2 py-1">
-                                                    <i class="ri-camera-line"></i>
-                                                    <span>Upload New</span>
-                                                </label>
-                                                <input type="file" name="profile_img" id="profile_img" accept="image/*">
-                                                <button type="button" class="btn btn-outline-danger btn-sm" id="remove-image">Remove</button>
+                                        <div class="upload-section">
+                                            <strong>Upload ID</strong>
+                                            <div class="d-flex flex-column flex-lg-row align-items-center column-gap-3 mt-3">
+                                                <div>
+                                                    <img src="<?php echo $userExists && !empty($row['upload_id']) ? htmlspecialchars($row['upload_id']) : '../img/id-placeholder.png'; ?>" 
+                                                         width="100" height="auto" class="bg-white rounded border" id="id-preview">
+                                                </div>
+                                                <div>
+                                                    <p class="text-center">Upload a valid ID for verification.</p>
+                                                    <div class="d-flex align-items-center justify-content-center justify-content-lg-start column-gap-2">
+                                                        <label for="upload_id" class="upload-label px-2 py-1">
+                                                            <i class="ri-id-card-line"></i>
+                                                            <span>Upload ID</span>
+                                                        </label>
+                                                        <input type="file" name="upload_id" id="upload_id" accept="image/*">
+                                                        <button type="button" class="btn btn-outline-danger btn-sm" id="remove-id">Remove</button>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -231,9 +304,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
         const saveChangesBtn = document.getElementById('save-changes');
         const cancelBtn = document.getElementById('cancel-btn');
         const profileImg = document.getElementById('profile_img');
+        const uploadId = document.getElementById('upload_id');
         const profilePreview = document.getElementById('profile-preview');
         const profilePreviewSmall = document.getElementById('profile-preview-small');
+        const idPreview = document.getElementById('id-preview');
         const removeImageBtn = document.getElementById('remove-image');
+        const removeIdBtn = document.getElementById('remove-id');
 
         // Store original values
         const originalValues = {};
@@ -241,6 +317,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
             originalValues[input.id] = input.value;
         });
         originalValues['profile_img'] = profilePreview.src;
+        originalValues['upload_id'] = idPreview.src;
 
         function checkForChanges() {
             let hasChanges = false;
@@ -249,7 +326,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                     hasChanges = true;
                 }
             });
-            if (profileImg.files.length > 0 || profilePreview.src !== originalValues['profile_img']) {
+            if (profileImg.files.length > 0 || profilePreview.src !== originalValues['profile_img'] ||
+                uploadId.files.length > 0 || idPreview.src !== originalValues['upload_id']) {
                 hasChanges = true;
             }
             saveChangesBtn.disabled = !hasChanges;
@@ -272,11 +350,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
             }
         });
 
+        uploadId.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    idPreview.src = e.target.result;
+                    checkForChanges();
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
         removeImageBtn.addEventListener('click', function() {
             if (confirm('Are you sure you want to remove your profile photo?')) {
                 profilePreview.src = '../img/3.png';
                 profilePreviewSmall.src = '../img/3.png';
                 profileImg.value = '';
+                checkForChanges();
+            }
+        });
+
+        removeIdBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to remove your ID?')) {
+                idPreview.src = '../img/id-placeholder.png';
+                uploadId.value = '';
                 checkForChanges();
             }
         });
@@ -288,7 +385,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                 });
                 profilePreview.src = originalValues['profile_img'];
                 profilePreviewSmall.src = originalValues['profile_img'];
+                idPreview.src = originalValues['upload_id'];
                 profileImg.value = '';
+                uploadId.value = '';
                 checkForChanges();
             }
         });
