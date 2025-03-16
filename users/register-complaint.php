@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('docs');
     const scanResult = document.getElementById('scanResult');
     const submitBtn = document.getElementById('submitBtn');
-    const maxSizePerFile = 10 * 1024 * 1024; 
+    const maxSizePerFile = 50 * 1024 * 1024; 
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
