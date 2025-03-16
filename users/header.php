@@ -1,5 +1,9 @@
-<?php session_start(); ?>
-<?php include("includes/config.php"); ?>
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+include("includes/config.php");
+?>
 <div class="shadow-sm d-flex align-items-center bg-white" style="min-height: 65px;">
 	<div class="container-fluid px-1">
 		<div class="row mx-0 w-100">

@@ -5,273 +5,240 @@ include('includes/config.php');
 if (strlen($_SESSION['login']) == 0) {
     header('location:index.php');
     exit();
-} else {
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-        $userId = $_SESSION['userId'];
-        $weaponType = mysqli_real_escape_string($conn, $_POST['weaponType']);
-        $crimeType = mysqli_real_escape_string($conn, $_POST['crimeType']);
-        $location = mysqli_real_escape_string($conn, $_POST['location']);
-        $complain_details = mysqli_real_escape_string($conn, $_POST['complaindetails']);
-        $compfile = $_FILES["compfile"]["name"];
-        $anonymous = isset($_POST['anonymous']) ? 1 : 0;
+}
 
-        $weaponQuery = mysqli_query($conn, "SELECT id FROM weapons WHERE weapon_type = '$weaponType'");
-        $weaponRow = mysqli_fetch_assoc($weaponQuery);
-        $weaponId = $weaponRow['id'];
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $userId = $_SESSION['userId'];
+    $location = mysqli_real_escape_string($conn, $_POST['locations']);
+    $complain_details = mysqli_real_escape_string($conn, $_POST['description']);
+    $compfile = $_FILES["docs"]["name"];
+    $anonymous = isset($_POST['anonymous']) ? 1 : 0;
 
-        $crimeQuery = mysqli_query($conn, "SELECT id FROM crime_types WHERE crime_type = '$crimeType'");
-        $crimeRow = mysqli_fetch_assoc($crimeQuery);
-        $crimeId = $crimeRow['id'];
+    if ($anonymous) {
+        $userId = NULL;
+    }
 
-        if ($compfile) {
-            $target_dir = "complaintdocs/";
-            $target_file = $target_dir . uniqid() . basename($compfile);
-            $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-            $mimeType = mime_content_type($_FILES["compfile"]["tmp_name"]);
+    if ($compfile) {
+        $target_dir = "complaintdocs/"; 
+        $target_file = $target_dir . uniqid() . basename($compfile);
+        $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+        $mimeType = mime_content_type($_FILES["docs"]["tmp_name"]);
 
-            $allowedImageTypes = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'];
-            $allowedVideoTypes = ['mp4', 'avi', 'mov'];
+        $allowedImageTypes = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'];
+        $allowedVideoTypes = ['mp4', 'avi', 'mov'];
 
-            if (in_array($fileType, $allowedImageTypes) || in_array($fileType, $allowedVideoTypes)) {
-                if (move_uploaded_file($_FILES["compfile"]["tmp_name"], $target_file)) {
-                    $endpoint = in_array($fileType, $allowedImageTypes) 
-                        ? 'https://api.sightengine.com/1.0/check.json' 
-                        : 'https://api.sightengine.com/1.0/video/check-sync.json';
+        if (in_array($fileType, $allowedImageTypes) || in_array($fileType, $allowedVideoTypes)) {
+            if (move_uploaded_file($_FILES["docs"]["tmp_name"], $target_file)) {
+                $endpoint = in_array($fileType, $allowedImageTypes) 
+                    ? 'https://api.sightengine.com/1.0/check.json' 
+                    : 'https://api.sightengine.com/1.0/video/check-sync.json';
 
-                    $params = array(
-                        'media' => new CURLFile($target_file),
-                        'models' => in_array($fileType, $allowedImageTypes) ? 'nudity-2.1,genai' : 'nudity-2.1',
-                        'api_user' => '1404146414',
-                        'api_secret' => 'SNxrhUxrGT3MmEUHmHdfmjtoTTYrbnUr',
-                    );
+                $params = array(
+                    'media' => new CURLFile($target_file),
+                    'models' => in_array($fileType, $allowedImageTypes) ? 'nudity-2.1,genai' : 'nudity-2.1',
+                    'api_user' => '1404146414',
+                    'api_secret' => 'SNxrhUxrGT3MmEUHmHdfmjtoTTYrbnUr',
+                );
 
-                    $ch = curl_init($endpoint);
-                    curl_setopt($ch, CURLOPT_POST, true);
-                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                    curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-                    $response = curl_exec($ch);
-                    curl_close($ch);
+                $ch = curl_init($endpoint);
+                curl_setopt($ch, CURLOPT_POST, true);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+                $response = curl_exec($ch);
+                curl_close($ch);
 
-                    $output = json_decode($response, true);
+                $output = json_decode($response, true);
 
-                    if (in_array($fileType, $allowedImageTypes)) {
-                        $nudityNone = isset($output['nudity']['none']) ? $output['nudity']['none'] : 0;
-                        $aiGenerated = isset($output['type']['ai_generated']) ? $output['type']['ai_generated'] : 1;
+                if (in_array($fileType, $allowedImageTypes)) {
+                    $nudityNone = isset($output['nudity']['none']) ? $output['nudity']['none'] : 0;
+                    $aiGenerated = isset($output['type']['ai_generated']) ? $output['type']['ai_generated'] : 1;
 
-                        if ($nudityNone < 0.99) {
-                            echo '<script>alert("The image contains nudity and cannot be uploaded.");</script>';
-                            unlink($target_file);
-                            exit();
-                        } elseif ($aiGenerated > 0.01) {
-                            echo '<script>alert("The image is AI-generated and cannot be uploaded.");</script>';
-                            unlink($target_file);
-                            exit();
-                        }
-                    } else {
-                        $frames = $output['data']['frames'] ?? [];
-                        $hasNudity = false;
-                        foreach ($frames as $frame) {
-                            if (isset($frame['nudity']['none']) && $frame['nudity']['none'] < 0.99) {
-                                $hasNudity = true;
-                                break;
-                            }
-                        }
-                        if ($hasNudity) {
-                            echo '<script>alert("The video contains nudity and cannot be uploaded.");</script>';
-                            unlink($target_file);
-                            exit();
+                    if ($nudityNone < 0.99) {
+                        echo '<script>alert("The image contains nudity and cannot be uploaded."); window.history.back();</script>';
+                        unlink($target_file);
+                        exit();
+                    } elseif ($aiGenerated > 0.01) {
+                        echo '<script>alert("The image is AI-generated and cannot be uploaded."); window.history.back();</script>';
+                        unlink($target_file);
+                        exit();
+                    }
+                } else {
+                    $frames = $output['data']['frames'] ?? [];
+                    $hasNudity = false;
+                    foreach ($frames as $frame) {
+                        if (isset($frame['nudity']['none']) && $frame['nudity']['none'] < 0.99) {
+                            $hasNudity = true;
+                            break;
                         }
                     }
-
-                    echo '<script>alert("File is clean and uploaded successfully.");</script>';
-                } else {
-                    echo '<script>alert("File upload failed. Please try again.");</script>';
-                    exit();
+                    if ($hasNudity) {
+                        echo '<script>alert("The video contains nudity and cannot be uploaded."); window.history.back();</script>';
+                        unlink($target_file);
+                        exit();
+                    }
                 }
+
+                echo '<script>alert("File is clean and uploaded successfully.");</script>';
             } else {
-                echo '<script>alert("Invalid file type. Only JPG, JPEG, PNG, WEBP, BMP, TIFF, MP4, AVI, MOV allowed.");</script>';
+                echo '<script>alert("File upload failed. Please try again."); window.history.back();</script>';
                 exit();
             }
+        } else {
+            echo '<script>alert("Invalid file type. Only JPG, JPEG, PNG, WEBP, BMP, TIFF, MP4, AVI, MOV allowed."); window.history.back();</script>';
+            exit();
         }
+    }
 
-        $complaint_number = 'CMP-' . time() . '-' . rand(1000, 9999);
-        $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, crime_type_id, weapon_id, location, complaint_details, complaint_file, registered_at, last_updated_at, anonymous) 
-                              VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW(), ?)");
-        $stmt->bind_param('siiisssi', $complaint_number, $userId, $crimeId, $weaponId, $location, $complain_details, $target_file, $anonymous);
-        $stmt->execute();
+    $complaint_number = 'CMP-' . time() . '-' . rand(1000, 9999);
+    $complaint_file = $compfile ? $target_file : NULL;
 
-        echo '<script>alert("Your complaint has been successfully filed. Complaint Number: ' . $complaint_number . '");</script>';
+    // Insert into tblcomplaints, allowing userId to be NULL for anonymous reports
+    $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, location, complaint_details, complaint_file, registered_at, last_updated_at, anonymous) 
+                            VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?)");
+    $stmt->bind_param('sisssi', $complaint_number, $userId, $location, $complain_details, $complaint_file, $anonymous);
+
+    // Execute the statement and handle success/failure
+    if ($stmt->execute()) {
+        // Store the complaint number in session for anonymous reports
+        if ($anonymous) {
+            if (!isset($_SESSION['anonymous_complaint_ids'])) {
+                $_SESSION['anonymous_complaint_ids'] = [];
+            }
+            $_SESSION['anonymous_complaint_ids'][] = $complaint_number;
+        }
+        echo '<script>alert("Your complaint has been successfully filed. Complaint Number: ' . $complaint_number . '"); window.location.href="dashboard.php";</script>';
+    } else {
+        echo '<script>alert("Failed to register complaint. Please try again."); window.history.back();</script>';
     }
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>Register Complaint</title>
-    <link href="assets/css/bootstrap.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
-    <link rel="shortcut icon" href="asset/images/ingat.ico">
-    <link href="assets/css/style-responsive.css" rel="stylesheet">
-    <link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css">
-    <style>
-#map {
-    height: calc(100vh - 60px); 
-    margin-top: 60px;
-    margin-left: 285px;
-}
-
-@media (max-width: 768px) {
-    #map {
-        margin-left: 0;
-        height: calc(100vh - 60px);
-    }
-}
-.header{
-    z-index: 1;
-}
-#main-content {
-    padding: 0;
-}
-
-.leaflet-top.leaflet-right {
-    top: 70px; 
-    right: 20px; 
-    z-index: 2000; 
-    pointer-events: auto;
-}
-
-.locate-me-btn {
-    background: #007bff;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    font-size: 18px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 2000; /* Ensure button is above everything else */
-}
-
-.locate-me-btn:hover {
-    background: #0056b3;
-}
-
-.modal-header {
-    background: #040073;
-}
-
-.mb-3 {
-    padding-bottom: 10px;
-}
-
-.btn-close-large {
-    background-color: transparent;
-    border: none;
-    font-size: 24px; 
-    color: #fff; 
-    font-weight: bold;
-    cursor: pointer;
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 2000;
-}
-
-.modal-content {
-    margin-top: 70px;
-    z-index: 1050;
-}
-
-.modal-backdrop {
-    z-index: 1040; 
-}
-</style>
-</head>
+<?php include "plugins-header.php"; ?>
 <body>
-<section id="container">
-    <?php include("includes/header.php"); ?>
-    <?php include("includes/sidebar.php"); ?>
-
-    <section id="main-content">
-        <div id="map"></div>
-
-        <!-- Locate Me Button -->
-        <div class="leaflet-top leaflet-right">
-            <button class="locate-me-btn" onclick="locateMe()">📍</button>
-        </div>
-
-        <!-- Form Modal -->
-        <div class="modal fade" id="formModal" tabindex="-1" aria-labelledby="formModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="formModalLabel">Register Complaint</h5>
-                <button type="button" class="btn-close-large" data-bs-dismiss="modal" aria-label="Close">×</button>
-            </div>
-            <div class="modal-body">
-                <form class="form-horizontal style-form" method="post" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <label for="location" class="form-label">Location</label>
-                        <input type="text" id="location" name="location" class="form-control" required placeholder="Enter or select location">
+    <?php include "header.php"; ?>
+    <div class="container-fluid px-1 py-4">
+        <div class="row row-gap-3 mx-0 h-100" style="max-height: calc(100vh - 145px);">
+            <div class="col-12 pb-4 h-100">
+                <div class="bg-white p-3 shadow-sm border rounded-2 position-relative bg-danger">
+                    <div>
+                        <button data-bs-toggle="modal" data-bs-target="#report-modal" class="position-absolute" style="
+                            background: #007bff;
+                            color: white;
+                            border: none;
+                            border-radius: 50%;
+                            width: 50px;
+                            height: 50px;
+                            font-size: 18px;
+                            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+                            cursor: pointer !important;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            top: 22px;
+                            right: 22px;
+                        " onclick="locateMe()">📍</button>
                     </div>
-                    <div class="mb-3">
-                        <label for="weaponType" class="form-label">Weapon Type</label>
-                        <select name="weaponType" id="weaponType" class="form-control select2" required>
-                            <option value="">Select Weapon Type</option>
-                            <?php
-                            $weaponQuery = mysqli_query($conn, "SELECT * FROM weapons");
-                            while ($weapon = mysqli_fetch_array($weaponQuery)) {
-                                echo '<option value="' . $weapon['weapon_type'] . '">' . $weapon['weapon_type'] . ' - ' . $weapon['details'] . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="crimeType" class="form-label">Crime Type</label>
-                        <select name="crimeType" id="crimeType" class="form-control select2" required>
-                            <option value="">Select Crime Type</option>
-                            <?php
-                            $crimeQuery = mysqli_query($conn, "SELECT * FROM crime_types");
-                            while ($crime = mysqli_fetch_array($crimeQuery)) {
-                                echo '<option value="' . $crime['crime_type'] . '">' . $crime['crime_type'] . ' - ' . $crime['details'] . '</option>';
-                            }
-                            ?>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="complaindetails" class="form-label">Complaint Details</label>
-                        <textarea name="complaindetails" id="complaindetails" class="form-control" required rows="5" maxlength="2000"></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <label for="compfile" class="form-label">Upload Evidence</label>
-                        <input type="file" name="compfile" id="compfile" class="form-control" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff,video/mp4,video/avi,video/quicktime">
-                        <p id="scanResult" style="color: red; display: none;">Scanning...</p>
-                    </div>
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="anonymous" name="anonymous">
-                        <label class="form-check-label" for="anonymous">Report Anonymously</label>
-                    </div>
-                    <div class="mb-3 text-end">
-                        <button type="submit" id="submitBtn" name="submit" class="btn btn-primary" disabled>Submit</button>
-                    </div>
-                </form>
+                    <iframe 
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3858.3275990994407!2d121.05137887458613!3d14.75056428575377!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3397b03dd2641cfd%3A0x438c583c22de5bdd!2sCaloocan%20City%20Hall%20North!5e0!3m2!1sen!2sph!4v1742112468901!5m2!1sen!2sph" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy">
+                    </iframe>
+                </div>
             </div>
         </div>
     </div>
-</div>
-    </section>
-    <?php include("includes/footer.php"); ?>
-</section>
+
+    <!-- Modal -->
+    <div class="modal fade" id="report-modal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="position-relative">
+                    <div role="button" class="position-absolute top-0 end-0 pt-3 pe-3 fs-4 text-danger" data-bs-dismiss="modal">
+                        <i class="ri-close-fill"></i>
+                    </div>
+                    <h5 class="page-title py-3 px-4">Register Complaint</h5>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="" enctype="multipart/form-data" class="reminders-form d-flex flex-column row-gap-4 pb-2 px-4" id="complaintForm">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="anonymous" name="anonymous">
+                            <label class="form-check-label" for="anonymous">Report Anonymously</label>
+                        </div>
+                        <div class="form-floating">
+                            <input required type="text" name="locations" id="locations" class="form-control rounded-1" placeholder="input locations">
+                            <label for="locations">Select Location</label>
+                        </div>
+                        <div class="form-floating w-100">
+                            <textarea required type="text" name="description" id="description" class="form-control rounded-1" placeholder="input description" style="height: 100px;"></textarea>
+                            <label for="description">Complaint Details</label>
+                        </div>
+                        <div class="form-floating">
+                            <input required type="file" name="docs" id="docs" class="form-control rounded-1" placeholder="upload docs" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff,video/mp4,video/avi,video/quicktime">
+                            <label for="docs">Upload Evidence</label>
+                            <p id="scanResult" style="color: red; display: none;">Scanning...</p>
+                        </div>
+                        <button type="submit" class="save-button btn btn-primary rounded-1 w-100" id="submitBtn" disabled>Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php include "plugins-footer.php"; ?>
+</body>
 
 <script>
-document.getElementById('compfile').addEventListener('change', function(event) {
+function locateMe() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+
+            const mapFrame = document.querySelector('iframe');
+            const mapSrc = `https://www.google.com/maps/embed/v1/place?key=AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M&q=${lat},${lng}`;
+            mapFrame.src = mapSrc;
+
+            const apiKey = "AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M";
+            const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+
+            fetch(geocodeUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "OK") {
+                        const location = data.results[0].formatted_address;
+                        document.getElementById("locations").value = location;
+
+                        const reportModal = new bootstrap.Modal(document.getElementById('report-modal'));
+                        reportModal.show();
+                    } else {
+                        alert("Failed to retrieve location details. Please try again.");
+                    }
+                })
+                .catch(() => alert("Error connecting to Google Maps API."));
+        }, error => {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    alert("Location access denied by user.");
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    alert("Location information unavailable.");
+                    break;
+                case error.TIMEOUT:
+                    alert("Location request timed out.");
+                    break;
+                case error.UNKNOWN_ERROR:
+                    alert("An unknown error occurred.");
+                    break;
+            }
+        });
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+}
+
+document.getElementById('docs').addEventListener('change', function(event) {
     const file = event.target.files[0];
     const submitBtn = document.getElementById('submitBtn');
     const scanResult = document.getElementById('scanResult');
@@ -293,7 +260,6 @@ document.getElementById('compfile').addEventListener('change', function(event) {
     formData.append('models', isImage ? 'nudity-2.1,genai' : 'nudity-2.1');
     formData.append('api_user', '1404146414');
     formData.append('api_secret', 'SNxrhUxrGT3MmEUHmHdfmjtoTTYrbnUr');
-
     const endpoint = isImage 
         ? 'https://api.sightengine.com/1.0/check.json' 
         : 'https://api.sightengine.com/1.0/video/check-sync.json';
@@ -349,73 +315,3 @@ document.getElementById('compfile').addEventListener('change', function(event) {
     });
 });
 </script>
-    <!-- JS Scripts -->
-    <script src="assets/js/jquery.js"></script>
-    <script src="assets/js/bootstrap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
-
-    <script>
-        mapboxgl.accessToken = 'pk.eyJ1Ijoib3Jlb2hvbGljIiwiYSI6ImNtMWFwdnR6bzF2c2QycXM4aW54Nmkxa3MifQ.0YVnZngmFw98M9yv9ZfFRw';
-
-        var map = L.map('map').setView([0, 0], 2); // Default center
-
-        // Add Mapbox GL JS tiles
-        L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=' + mapboxgl.accessToken).addTo(map);
-
-        var marker;
-
-        // Reverse geocode to get location name
-        function reverseGeocode(lat, lng) {
-            var url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`;
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.features.length > 0) {
-                        var locationName = data.features[0].place_name;
-                        document.getElementById("location").value = locationName;
-                        $('#formModal').modal('show'); // Show the form modal
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
-
-        
-    // Function to handle "Locate Me" button click
-    function locateMe() {
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(function (position) {
-                let lat = position.coords.latitude;
-                let lng = position.coords.longitude;
-                map.setView([lat, lng], 14);
-
-                if (marker) {
-                    marker.setLatLng([lat, lng]);
-                } else {
-                    marker = L.marker([lat, lng]).addTo(map);
-                }
-
-                reverseGeocode(lat, lng);
-            });
-        } else {
-            alert('Geolocation is not supported by your browser.');
-        }
-    }
-
-    map.on('click', function (e) {
-        var lat = e.latlng.lat;
-        var lng = e.latlng.lng;
-
-        if (marker) marker.remove();
-        marker = L.marker([lat, lng]).addTo(map);
-
-        reverseGeocode(lat, lng);
-    });
-    $('.btn-close').on('click', function () {
-    $('#formModal').modal('hide');
-});
-
-    </script>
-</body>
-</html>

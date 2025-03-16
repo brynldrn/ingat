@@ -1,0 +1,120 @@
+/* CUSTOM FONT FAMILY */
+@font-face {
+  font-family: 'boxicons';
+  src: url('../fonts/boxicons.woff') format('woff');
+}
+
+:root {
+  --blue: #2563EB;
+  --dark-blue: #1a1f36;
+  --white: #ffffff;
+  --gray: rgba(71, 85, 105, 1);
+  --light-gray: #F8FAFC;
+
+  --active-page: linear-gradient(90deg, #EFF6FF 0%, #DBEAFE 100%);
+  --boxicons: 'boxicons', Arial, Helvetica, sans-serif;
+  --border: 2px solid #dee2e6;
+}
+
+* {
+  font-family: var(--boxicons) !important;
+}
+body{
+  background-color: var(--light-gray) !important ;
+}
+table thead tr th{
+  color: rgba(113, 113, 122, 1) !important;
+}
+.navbar-text-color li a{
+  color: var(--gray);
+}
+
+.navbar-text-color li a:hover {
+  background: var(--active-page) !important;
+}
+
+.btn.show,
+#header-profile:hover{
+  background: var(--active-page) !important;
+}
+
+.modal .page-title{
+  color: var(--white);
+  background: var(--blue);
+}
+
+#cancel-btn{
+  border: 1px solid rgba(203, 213, 225, 1);
+  background: var(--white);
+}
+#cancel-btn:hover{
+  color: rgba(255, 255, 255, 1);
+  background: linear-gradient(90deg, #F97316 0%, #EA580C 100%);
+}
+#save-changes{
+  color: rgba(255, 255, 255, 1);
+  background: linear-gradient(90deg, #F97316 0%, #EA580C 100%);
+  border: 1px solid rgba(203, 213, 225, 1);
+
+}
+#save-changes:hover{
+  color: #000;
+  background: var(--white);
+}
+
+#left-registration{
+  background-image: url("../../../img/pnp.jpeg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+#left-registration div{
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/*==========For md reponsive ==========*/
+@media (max-width: 1348px) {
+  .loader-container{
+    top: 70px;
+    left: 0;
+  }
+  #change-image{
+    bottom: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%);
+  }
+  .table{
+    height: auto;
+  }
+  .table thead{
+    display: none;
+  }
+
+  .table, .table tbody, .table tr, .table td{
+    display: block;
+    width: 100%;
+  }
+
+  .table tr{
+    margin-bottom: 15px;
+
+  }
+  .table tbody tr td {
+    display: flex;
+    justify-content: flex-start;
+    text-align: left;
+    padding-left: 0;
+    position: relative;
+    word-wrap: break-word;
+    border: 1px solid #dee2e6 !important;
+
+  }
+  .table td:before{
+    content: attr(data-label);
+    width: 50%;
+    padding-left: 15px;
+    font-weight: 600;
+    font-size: 14px;
+    text-align: left;
+  }
+}
