@@ -300,7 +300,7 @@
                 <div class="col-12 col-md-4">
                     <div class="feature-box">
                         <i class="fas fa-users"></i>
-                        <h3>Community Network</h3>
+                        <h3>Community Networks</h3>
                         <p>Connect with neighbors and local authorities to build a stronger, more responsive safety network.</p>
                     </div>
                 </div>
