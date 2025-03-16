@@ -156,6 +156,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+<style>
+label[for="crime_type"],
+label[for="weapon"] {
+    margin-left: 10px;
+}
+</style>
 
 <?php include "plugins-header.php"; ?>
 <body>
@@ -176,30 +182,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             <small id="locationMessage" class="form-text text-muted d-block mt-1">Please turn on your device location to auto-fill this field.</small>
                             <button type="button" id="getLocationBtn" class="btn btn-outline-primary btn-sm mt-2">Get Location</button>
                         </div>
-                        <div class="row mx-0 row-gap-4">
-                        
-                            <div class="col-12 col-lg-6">
-                                <div class="col-12">
-                                <label for="weaponType" class="form-label">Weapon Involve</label>
-                                <select name="weaponType" id="weaponType" class="form-control select2" required>
-                                <option value="">Select Weapon Involve</option>
-                                <option value="">Select Weapon Involve (Optional)</option>
-                                    <?php foreach ($weapons as $weapon): ?>
-                                        <option value="<?php echo $weapon['id']; ?>"><?php echo htmlspecialchars($weapon['weapon_type']); ?></option>
-                                    <?php endforeach; ?>
-                                 </select>
-                                    </div>
-			                 </div>
-                            <div class="col-12 col-lg-6">
-                            <div class="col-12">
-                                    <label for="crimeType" class="form-label">Incident</label>
-                                    <select name="crimeType" id="crimeType" class="form-control select2" required>
-                                    <option value="">Select Incidents (Optional)</option>
+                        <div class="row row-gap-4">
+                            <div class="col-12 col-md-6 form-floating position-relative">
+                                <select name="crime_type" id="crime_type" class="form-control rounded-1">
+                                    <option value="">Select Crime Type (Optional)</option>
                                     <?php foreach ($crime_types as $crime): ?>
                                         <option value="<?php echo $crime['id']; ?>"><?php echo htmlspecialchars($crime['crime_type']); ?></option>
                                     <?php endforeach; ?>
-                                    </select>
-                                    </div>
+                                </select>
+                                <label for="crime_type">Crime Type</label>
+                            </div>
+                            <div class="col-12 col-md-6 form-floating position-relative">
+                                <select name="weapon" id="weapon" class="form-control rounded-1">
+                                    <option value="">Select Weapon (Optional)</option>
+                                    <?php foreach ($weapons as $weapon): ?>
+                                        <option value="<?php echo $weapon['id']; ?>"><?php echo htmlspecialchars($weapon['weapon_type']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <label for="weapon">Weapon</label>
                             </div>
                         </div>
                         <div class="form-floating w-100">

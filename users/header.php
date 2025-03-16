@@ -93,16 +93,23 @@ foreach ($recent_complaints as $complaint) {
 
     $status = $complaint['status'] ?? 'Null';
     $updated_at = $status === 'Null' ? strtotime($complaint['registered_at']) : strtotime($complaint['last_updated_at']);
-    $time_diff = time() - $updated_at;
+    $current_time = time(); // Current server time in seconds
+    $time_diff = $current_time - $updated_at; // Difference in seconds
 
-    if ($time_diff < 60) {
-        $time_ago = "just now";
+    // More granular and accurate time calculation
+    if ($time_diff < 10) {
+        $time_ago = "just now"; // Less than 10 seconds
+    } elseif ($time_diff < 60) {
+        $time_ago = $time_diff . " sec ago"; // 10-59 seconds
     } elseif ($time_diff < 3600) {
-        $time_ago = floor($time_diff / 60) . " min ago";
+        $minutes = floor($time_diff / 60);
+        $time_ago = $minutes . " min" . ($minutes > 1 ? "s" : "") . " ago"; // 1-59 minutes
     } elseif ($time_diff < 86400) {
-        $time_ago = floor($time_diff / 3600) . " hour" . (floor($time_diff / 3600) > 1 ? "s" : "") . " ago";
+        $hours = floor($time_diff / 3600);
+        $time_ago = $hours . " hour" . ($hours > 1 ? "s" : "") . " ago"; // 1-23 hours
     } else {
-        $time_ago = floor($time_diff / 86400) . " day" . (floor($time_diff / 86400) > 1 ? "s" : "") . " ago";
+        $days = floor($time_diff / 86400);
+        $time_ago = $days . " day" . ($days > 1 ? "s" : "") . " ago"; // 1+ days
     }
 
     $message = '';
@@ -125,7 +132,7 @@ foreach ($recent_complaints as $complaint) {
             'complaint_number' => $complaint_number
         ];
         $notification_count++;
-    }
+     }
 }
 ?>
 
