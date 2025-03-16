@@ -36,7 +36,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
-    $maxFileSize = 10 * 1024 * 1024;
+    $maxImageSize = 10 * 1024 * 1024; 
+    $maxVideoSize = 50 * 1024 * 1024; 
     $target_dir = "complaintdocs/";
     $complaint_files = [];
     $allowedImageTypes = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'];
@@ -45,86 +46,88 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     for ($i = 0; $i < $fileCount; $i++) {
         $compfile = $_FILES["docs"]["name"][$i];
         $fileSize = $_FILES["docs"]["size"][$i];
+        $fileType = strtolower(pathinfo($compfile, PATHINFO_EXTENSION));
 
-        if ($fileSize > $maxFileSize) {
-            echo '<script>alert("File ' . htmlspecialchars($compfile) . ' exceeds 10 MB limit."); window.history.back();</script>';
-            exit();
-        }
-
-        $target_file = $target_dir . uniqid() . basename($compfile);
-        $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-        $mimeType = mime_content_type($_FILES["docs"]["tmp_name"][$i]);
-
-        if (in_array($fileType, $allowedImageTypes) || in_array($fileType, $allowedVideoTypes)) {
-            if (move_uploaded_file($_FILES["docs"]["tmp_name"][$i], $target_file)) {
-                $endpoint = in_array($fileType, $allowedImageTypes) 
-                    ? 'https://api.sightengine.com/1.0/check.json' 
-                    : 'https://api.sightengine.com/1.0/video/check-sync.json';
-
-                $params = array(
-                    'media' => new CURLFile($target_file),
-                    'models' => in_array($fileType, $allowedImageTypes) ? 'nudity-2.1,genai' : 'nudity-2.1',
-                    'api_user' => '1404146414',
-                    'api_secret' => 'SNxrhUxrGT3MmEUHmHdfmjtoTTYrbnUr',
-                );
-
-                $ch = curl_init($endpoint);
-                curl_setopt($ch, CURLOPT_POST, true);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-                $response = curl_exec($ch);
-                curl_close($ch);
-
-                $output = json_decode($response, true);
-
-                if (in_array($fileType, $allowedImageTypes)) {
-                    $nudityNone = isset($output['nudity']['none']) ? $output['nudity']['none'] : 0;
-                    $aiGenerated = isset($output['type']['ai_generated']) ? $output['type']['ai_generated'] : 1;
-
-                    if ($nudityNone < 0.99) {
-                        echo '<script>alert("File ' . htmlspecialchars($compfile) . ' contains nudity and cannot be uploaded."); window.history.back();</script>';
-                        unlink($target_file);
-                        foreach ($complaint_files as $file) {
-                            unlink($file);
-                        }
-                        exit();
-                    } elseif ($aiGenerated > 0.01) {
-                        echo '<script>alert("File ' . htmlspecialchars($compfile) . ' is AI-generated and cannot be uploaded."); window.history.back();</script>';
-                        unlink($target_file);
-                        foreach ($complaint_files as $file) {
-                            unlink($file);
-                        }
-                        exit();
-                    }
-                } else {
-                    $frames = $output['data']['frames'] ?? [];
-                    $hasNudity = false;
-                    foreach ($frames as $frame) {
-                        if (isset($frame['nudity']['none']) && $frame['nudity']['none'] < 0.99) {
-                            $hasNudity = true;
-                            break;
-                        }
-                    }
-                    if ($hasNudity) {
-                        echo '<script>alert("File ' . htmlspecialchars($compfile) . ' contains nudity and cannot be uploaded."); window.history.back();</script>';
-                        unlink($target_file);
-                        foreach ($complaint_files as $file) {
-                            unlink($file);
-                        }
-                        exit();
-                    }
-                }
-
-                $complaint_files[] = $target_file;
-            } else {
-                echo '<script>alert("File upload failed for ' . htmlspecialchars($compfile) . '. Please try again."); window.history.back();</script>';
-                foreach ($complaint_files as $file) {
-                    unlink($file);
-                }
+        if (in_array($fileType, $allowedImageTypes)) {
+            if ($fileSize > $maxImageSize) {
+                echo '<script>alert("Image file ' . htmlspecialchars($compfile) . ' exceeds 10 MB limit."); window.history.back();</script>';
+                exit();
+            }
+        } elseif (in_array($fileType, $allowedVideoTypes)) {
+            if ($fileSize > $maxVideoSize) {
+                echo '<script>alert("Video file ' . htmlspecialchars($compfile) . ' exceeds 50 MB limit."); window.history.back();</script>';
                 exit();
             }
         } else {
             echo '<script>alert("Invalid file type for ' . htmlspecialchars($compfile) . '. Only JPG, JPEG, PNG, WEBP, BMP, TIFF, MP4, AVI, MOV allowed."); window.history.back();</script>';
+            exit();
+        }
+
+        $target_file = $target_dir . uniqid() . basename($compfile);
+        $mimeType = mime_content_type($_FILES["docs"]["tmp_name"][$i]);
+
+        if (move_uploaded_file($_FILES["docs"]["tmp_name"][$i], $target_file)) {
+            $endpoint = in_array($fileType, $allowedImageTypes) 
+                ? 'https://api.sightengine.com/1.0/check.json' 
+                : 'https://api.sightengine.com/1.0/video/check-sync.json';
+
+            $params = array(
+                'media' => new CURLFile($target_file),
+                'models' => in_array($fileType, $allowedImageTypes) ? 'nudity-2.1,genai' : 'nudity-2.1',
+                'api_user' => '1404146414',
+                'api_secret' => 'SNxrhUxrGT3MmEUHmHdfmjtoTTYrbnUr',
+            );
+
+            $ch = curl_init($endpoint);
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+            $response = curl_exec($ch);
+            curl_close($ch);
+
+            $output = json_decode($response, true);
+
+            if (in_array($fileType, $allowedImageTypes)) {
+                $nudityNone = isset($output['nudity']['none']) ? $output['nudity']['none'] : 0;
+                $aiGenerated = isset($output['type']['ai_generated']) ? $output['type']['ai_generated'] : 1;
+
+                if ($nudityNone < 0.99) {
+                    echo '<script>alert("File ' . htmlspecialchars($compfile) . ' contains nudity and cannot be uploaded."); window.history.back();</script>';
+                    unlink($target_file);
+                    foreach ($complaint_files as $file) {
+                        unlink($file);
+                    }
+                    exit();
+                } elseif ($aiGenerated > 0.01) {
+                    echo '<script>alert("File ' . htmlspecialchars($compfile) . ' is AI-generated and cannot be uploaded."); window.history.back();</script>';
+                    unlink($target_file);
+                    foreach ($complaint_files as $file) {
+                        unlink($file);
+                    }
+                    exit();
+                }
+            } else {
+                $frames = $output['data']['frames'] ?? [];
+                $hasNudity = false;
+                foreach ($frames as $frame) {
+                    if (isset($frame['nudity']['none']) && $frame['nudity']['none'] < 0.99) {
+                        $hasNudity = true;
+                        break;
+                    }
+                }
+                if ($hasNudity) {
+                    echo '<script>alert("File ' . htmlspecialchars($compfile) . ' contains nudity and cannot be uploaded."); window.history.back();</script>';
+                    unlink($target_file);
+                    foreach ($complaint_files as $file) {
+                        unlink($file);
+                    }
+                    exit();
+                }
+            }
+
+            $complaint_files[] = $target_file;
+        } else {
+            echo '<script>alert("File upload failed for ' . htmlspecialchars($compfile) . '. Please try again."); window.history.back();</script>';
             foreach ($complaint_files as $file) {
                 unlink($file);
             }
@@ -208,7 +211,7 @@ label[for="weapon"] {
                         </div>
                         <div class="form-floating">
                             <input required type="file" name="docs[]" id="docs" class="form-control rounded-1" placeholder="upload docs" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff,video/mp4,video/avi,video/quicktime" multiple>
-                            <label for="docs">Upload Evidence (Max 3 files, 10 MB each)</label>
+                            <label for="docs">Upload Evidence (Max 3 files, Images: 10 MB, Videos: 50 MB)</label>
                             <p id="scanResult" style="color: red; display: none;">Scanning...</p>
                         </div>
                         <button type="submit" class="save-button btn btn-primary rounded-1 w-100" id="submitBtn" disabled>Submit</button>
@@ -229,7 +232,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('docs');
     const scanResult = document.getElementById('scanResult');
     const submitBtn = document.getElementById('submitBtn');
-    const maxSizePerFile = 10 * 1024 * 1024; 
+    const maxImageSize = 10 * 1024 * 1024; 
+    const maxVideoSize = 50 * 1024 * 1024; 
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -358,9 +362,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         for (let i = 0; i < files.length; i++) {
-            if (files[i].size > maxSizePerFile) {
+            const file = files[i];
+            const fileType = file.type.split('/')[0]; 
+            const fileSize = file.size;
+
+            if (fileType === 'image' && fileSize > maxImageSize) {
                 scanResult.style.display = 'block';
-                scanResult.innerText = `File ${files[i].name} exceeds 10 MB limit.`;
+                scanResult.innerText = `Image file ${file.name} exceeds 10 MB limit.`;
+                scanResult.style.color = 'red';
+                submitBtn.disabled = true;
+                return;
+            } else if (fileType === 'video' && fileSize > maxVideoSize) {
+                scanResult.style.display = 'block';
+                scanResult.innerText = `Video file ${file.name} exceeds 50 MB limit.`;
                 scanResult.style.color = 'red';
                 submitBtn.disabled = true;
                 return;
