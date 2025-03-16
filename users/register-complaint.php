@@ -7,12 +7,20 @@ if (strlen($_SESSION['login']) == 0) {
     exit();
 }
 
+$weapons_query = mysqli_query($conn, "SELECT id, weapon_type FROM weapons");
+$weapons = mysqli_fetch_all($weapons_query, MYSQLI_ASSOC);
+
+$crime_types_query = mysqli_query($conn, "SELECT id, crime_type FROM crime_types");
+$crime_types = mysqli_fetch_all($crime_types_query, MYSQLI_ASSOC);
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $userId = $_SESSION['userId'];
     $location = mysqli_real_escape_string($conn, $_POST['locations']);
     $complain_details = mysqli_real_escape_string($conn, $_POST['description']);
     $compfile = $_FILES["docs"]["name"];
     $anonymous = isset($_POST['anonymous']) ? 1 : 0;
+    $weapon_id = !empty($_POST['weapon']) ? intval($_POST['weapon']) : NULL;
+    $crime_type_id = !empty($_POST['crime_type']) ? intval($_POST['crime_type']) : NULL;
 
     if ($anonymous) {
         $userId = NULL;
@@ -92,9 +100,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $complaint_number = 'CMP-' . time() . '-' . rand(1000, 9999);
     $complaint_file = $compfile ? $target_file : NULL;
 
-    $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, location, complaint_details, complaint_file, registered_at, last_updated_at, anonymous) 
-                            VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?)");
-    $stmt->bind_param('sisssi', $complaint_number, $userId, $location, $complain_details, $complaint_file, $anonymous);
+    $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, location, complaint_details, complaint_file, registered_at, last_updated_at, anonymous, weapon_id, crime_type_id) 
+                            VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)");
+    $stmt->bind_param('sisssiii', $complaint_number, $userId, $location, $complain_details, $complaint_file, $anonymous, $weapon_id, $crime_type_id);
 
     if ($stmt->execute()) {
         if ($anonymous) {
@@ -126,6 +134,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         <div class="form-floating position-relative">
                             <input required type="text" name="locations" id="locations" class="form-control rounded-1" placeholder="input locations">
                             <label for="locations">Location</label>
+                            <small id="locationMessage" class="form-text text-muted d-block mt-1">Please turn on your device location to auto-fill this field.</small>
+                            <button type="button" id="getLocationBtn" class="btn btn-outline-primary btn-sm mt-2">Get Location</button>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 col-md-6 form-floating">
+                                <select name="crime_type" id="crime_type" class="form-control rounded-1">
+                                    <option value="">Select Crime Type (Optional)</option>
+                                    <?php foreach ($crime_types as $crime): ?>
+                                        <option value="<?php echo $crime['id']; ?>"><?php echo htmlspecialchars($crime['crime_type']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <label for="crime_type">Crime Type</label>
+                            </div>
+                            <div class="col-12 col-md-6 form-floating">
+                                <select name="weapon" id="weapon" class="form-control rounded-1">
+                                    <option value="">Select Weapon (Optional)</option>
+                                    <?php foreach ($weapons as $weapon): ?>
+                                        <option value="<?php echo $weapon['id']; ?>"><?php echo htmlspecialchars($weapon['weapon_type']); ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <label for="weapon">Weapon</label>
+                            </div>
                         </div>
                         <div class="form-floating w-100">
                             <textarea required type="text" name="description" id="description" class="form-control rounded-1" placeholder="input description" style="height: 150px;"></textarea>
@@ -148,7 +178,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Automatically request location on page load
+    const locationInput = document.getElementById('locations');
+    const getLocationBtn = document.getElementById('getLocationBtn');
+    const locationMessage = document.getElementById('locationMessage');
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             position => {
@@ -162,34 +195,100 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(data => {
                         if (data.status === "OK") {
                             const location = data.results[0].formatted_address;
-                            document.getElementById("locations").value = location;
+                            locationInput.value = location;
+                            locationMessage.style.display = 'none';
+                            getLocationBtn.style.display = 'none';
                             checkFormValidity();
                         } else {
-                            alert("Failed to retrieve location details. Please enter your location manually.");
+                            locationMessage.textContent = 'Failed to get location. Please try again or enter manually.';
+                            locationMessage.style.color = 'red';
                         }
                     })
-                    .catch(() => alert("Error connecting to Google Maps API. Please enter location manually."));
+                    .catch(() => {
+                        locationMessage.textContent = 'Error connecting to location service. Please try again or enter manually.';
+                        locationMessage.style.color = 'red';
+                    });
             },
             error => {
                 switch (error.code) {
                     case error.PERMISSION_DENIED:
-                        alert("Location access denied. Please enable location services in your device settings and refresh the page, or enter your location manually.");
+                        locationMessage.textContent = 'Location access denied. Enable location in settings or enter manually.';
+                        locationMessage.style.color = 'red';
                         break;
                     case error.POSITION_UNAVAILABLE:
-                        alert("Location information unavailable. Please ensure location services are enabled or enter your location manually.");
+                        locationMessage.textContent = 'Location unavailable. Please ensure location services are on or enter manually.';
+                        locationMessage.style.color = 'red';
                         break;
                     case error.TIMEOUT:
-                        alert("Location request timed out. Please try refreshing the page or enter your location manually.");
+                        locationMessage.textContent = 'Location request timed out. Try again or enter manually.';
+                        locationMessage.style.color = 'red';
                         break;
                     case error.UNKNOWN_ERROR:
-                        alert("An unknown error occurred. Please enter your location manually.");
+                        locationMessage.textContent = 'An error occurred. Please try again or enter manually.';
+                        locationMessage.style.color = 'red';
                         break;
                 }
             }
         );
     } else {
-        alert("Geolocation is not supported by this browser. Please enter your location manually.");
+        locationMessage.textContent = 'Geolocation not supported. Please enter your location manually.';
+        locationMessage.style.color = 'red';
+        getLocationBtn.style.display = 'none';
     }
+
+    getLocationBtn.addEventListener('click', function() {
+        if (navigator.geolocation) {
+            locationMessage.textContent = 'Fetching location...';
+            locationMessage.style.color = 'orange';
+            navigator.geolocation.getCurrentPosition(
+                position => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const apiKey = "AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M";
+                    const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`;
+
+                    fetch(geocodeUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === "OK") {
+                                const location = data.results[0].formatted_address;
+                                locationInput.value = location;
+                                locationMessage.style.display = 'none';
+                                getLocationBtn.style.display = 'none';
+                                checkFormValidity();
+                            } else {
+                                locationMessage.textContent = 'Failed to get location. Please try again or enter manually.';
+                                locationMessage.style.color = 'red';
+                            }
+                        })
+                        .catch(() => {
+                            locationMessage.textContent = 'Error connecting to location service. Please try again or enter manually.';
+                            locationMessage.style.color = 'red';
+                        });
+                },
+                error => {
+                    switch (error.code) {
+                        case error.PERMISSION_DENIED:
+                            locationMessage.textContent = 'Location access denied. Enable location in settings or enter manually.';
+                            locationMessage.style.color = 'red';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            locationMessage.textContent = 'Location unavailable. Please ensure location services are on or enter manually.';
+                            locationMessage.style.color = 'red';
+                            break;
+                        case error.TIMEOUT:
+                            locationMessage.textContent = 'Location request timed out. Try again or enter manually.';
+                            locationMessage.style.color = 'red';
+                            break;
+                        case error.UNKNOWN_ERROR:
+                            locationMessage.textContent = 'An error occurred. Please try again or enter manually.';
+                            locationMessage.style.color = 'red';
+                            break;
+                    }
+                }
+            );
+        }
+    });
 
     document.getElementById('docs').addEventListener('change', function(event) {
         const file = event.target.files[0];
@@ -198,7 +297,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (!file) {
             scanResult.style.display = 'none';
-            submitBtn.disabled = false; // Allow submission if no file is selected
+            submitBtn.disabled = false; 
             return;
         }
 
@@ -268,7 +367,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enable submit button when required fields are filled
     function checkFormValidity() {
         const location = document.getElementById('locations').value.trim();
         const description = document.getElementById('description').value.trim();
