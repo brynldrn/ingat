@@ -25,7 +25,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $userId = NULL;
     }
 
-
     if (empty($_FILES["docs"]["name"][0])) {
         echo '<script>alert("Please upload at least one evidence file."); window.history.back();</script>';
         exit();
@@ -37,14 +36,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         exit();
     }
 
+    $maxFileSize = 10 * 1024 * 1024;
     $target_dir = "complaintdocs/";
     $complaint_files = [];
     $allowedImageTypes = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'tiff'];
     $allowedVideoTypes = ['mp4', 'avi', 'mov'];
 
-
     for ($i = 0; $i < $fileCount; $i++) {
         $compfile = $_FILES["docs"]["name"][$i];
+        $fileSize = $_FILES["docs"]["size"][$i];
+
+        if ($fileSize > $maxFileSize) {
+            echo '<script>alert("File ' . htmlspecialchars($compfile) . ' exceeds 10 MB limit."); window.history.back();</script>';
+            exit();
+        }
+
         $target_file = $target_dir . uniqid() . basename($compfile);
         $fileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
         $mimeType = mime_content_type($_FILES["docs"]["tmp_name"][$i]);
@@ -78,7 +84,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     if ($nudityNone < 0.99) {
                         echo '<script>alert("File ' . htmlspecialchars($compfile) . ' contains nudity and cannot be uploaded."); window.history.back();</script>';
                         unlink($target_file);
-                
                         foreach ($complaint_files as $file) {
                             unlink($file);
                         }
@@ -196,7 +201,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         </div>
                         <div class="form-floating">
                             <input required type="file" name="docs[]" id="docs" class="form-control rounded-1" placeholder="upload docs" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff,video/mp4,video/avi,video/quicktime" multiple>
-                            <label for="docs">Upload Evidence (Max 3 files)</label>
+                            <label for="docs">Upload Evidence (Max 3 files, 10 MB each)</label>
                             <p id="scanResult" style="color: red; display: none;">Scanning...</p>
                         </div>
                         <button type="submit" class="save-button btn btn-primary rounded-1 w-100" id="submitBtn" disabled>Submit</button>
@@ -217,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('docs');
     const scanResult = document.getElementById('scanResult');
     const submitBtn = document.getElementById('submitBtn');
+    const maxSizePerFile = 10 * 1024 * 1024; 
 
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
@@ -342,6 +348,16 @@ document.addEventListener('DOMContentLoaded', function() {
             scanResult.style.color = 'red';
             submitBtn.disabled = true;
             return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            if (files[i].size > maxSizePerFile) {
+                scanResult.style.display = 'block';
+                scanResult.innerText = `File ${files[i].name} exceeds 10 MB limit.`;
+                scanResult.style.color = 'red';
+                submitBtn.disabled = true;
+                return;
+            }
         }
 
         scanResult.style.display = 'block';
