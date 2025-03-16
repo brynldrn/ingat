@@ -41,12 +41,6 @@ include("includes/config.php");
 									Profile
 								</a>
 							</li>
-							<li>
-								<a class="dropdown-item" href="#">
-									<i class="ri-settings-2-line"></i>
-									Settings
-								</a>
-							</li>
 							<li><hr class="dropdown-divider"></li>
 							<li>
 								<a class="dropdown-item text-danger" href="logout.php">
@@ -137,12 +131,6 @@ include("includes/config.php");
 						    	Profile
 						    </a>
 					    </li>
-					    <li>
-					    	<a class="dropdown-item" href="#">
-							    <i class="ri-settings-2-line"></i>
-							    Settings
-							</a>
-						</li>
 					    <li><hr class="dropdown-divider"></li>
 					    <li>
 					    	<a class="dropdown-item text-danger" href="logout.php">
