@@ -81,6 +81,7 @@ if (isset($_POST['submit'])) {
       width: 100%;
       max-width: 1200px;
       height: 100vh;
+      flex-direction: row; /* Default for desktop */
     }
     .left-section {
       flex: 1;
@@ -91,7 +92,7 @@ if (isset($_POST['submit'])) {
       align-items: center;
       color: #fff;
       padding: 2rem;
-      margin-left:-10%;
+      margin-left: -10%; /* Adjusted for desktop */
     }
     .left-section img {
       max-width: 150px;
@@ -198,6 +199,59 @@ if (isset($_POST['submit'])) {
       padding: 0.75rem;
       margin-bottom: 1rem;
       border-radius: 0.25rem;
+    }
+
+   
+    @media (max-width: 768px) {
+      .login-container {
+        flex-direction: column; 
+        height: auto; 
+        padding: 1rem; 
+      }
+      .left-section {
+        flex: none;
+        width: 100%;
+        padding: 1rem;
+        margin-left: 0;
+        min-height: 200px;
+      }
+      .left-section img {
+        max-width: 120px; 
+      }
+      .left-section p {
+        font-size: 0.9rem;
+      }
+      .right-section {
+        flex: none; 
+        width: 100%;
+        padding: 1rem;
+      }
+      .card {
+        max-width: 100%;
+        padding: 1.5rem; 
+      }
+      .card-title {
+        font-size: 1.25rem; 
+      }
+      .card-subtitle {
+        font-size: 0.85rem;
+      }
+      .form-control {
+        font-size: 0.9rem; 
+      }
+      .btn-primary {
+        padding: 0.6rem; 
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 991px) {
+      .login-container {
+        max-width: 800px; 
+      }
+      .left-section, .right-section {
+        padding: 1.5rem;
+      }
     }
   </style>
 </head>

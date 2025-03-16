@@ -199,6 +199,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       width: 100%;
       max-width: 1200px;
       height: 100vh;
+      flex-direction: row; /* Default for desktop */
     }
     .left-section {
       flex: 1;
@@ -349,16 +350,81 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       margin-top: 0.25rem;
       display: none;
     }
+
+    /* Mobile Responsiveness */
     @media (max-width: 768px) {
+      .login-container {
+        flex-direction: column; /* Stack vertically on mobile */
+        height: auto; /* Allow height to adjust */
+        padding: 1rem;
+      }
+      .left-section {
+        flex: none;
+        width: 100%;
+        padding: 1rem;
+        margin-left: 0; /* Remove negative margin */
+        min-height: 200px;
+      }
+      .left-section img {
+        max-width: 120px; /* Smaller logo */
+      }
+      .left-section p {
+        font-size: 0.9rem; /* Smaller text */
+      }
+      .right-section {
+        flex: none;
+        width: 100%;
+        padding: 1rem;
+      }
+      .card {
+        max-width: 100%; /* Full width on mobile */
+        padding: 1.5rem;
+      }
+      .card-title {
+        font-size: 1.25rem; /* Smaller title */
+      }
+      .card-subtitle {
+        font-size: 0.85rem; /* Smaller subtitle */
+      }
       .form-row {
-        flex-direction: column;
+        flex-direction: column; /* Stack form fields vertically */
         gap: 0;
       }
       .form-group {
         margin-bottom: 1rem;
       }
+      .form-control {
+        font-size: 0.9rem; /* Slightly smaller input text */
+      }
+      .btn-primary {
+        padding: 0.6rem; /* Smaller button */
+        font-size: 0.9rem;
+      }
+      .terms-container {
+        margin-bottom: 1rem;
+      }
+      /* Modal adjustments */
+      #termsModal > div {
+        width: 95%; /* Wider on small screens */
+        margin: 10% auto;
+        padding: 15px;
+      }
+      .terms-content {
+        max-height: 300px; /* Smaller modal height */
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Tablets (optional intermediate step) */
+    @media (min-width: 769px) and (max-width: 991px) {
+      .login-container {
+        max-width: 800px;
+      }
+      .left-section, .right-section {
+        padding: 1.5rem;
+      }
       .card {
-        max-width: 400px;
+        max-width: 450px;
       }
     }
   </style>
