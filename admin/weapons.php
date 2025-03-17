@@ -125,7 +125,7 @@ if (strlen($_SESSION['alogin']) == 0) {
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">Create Weapon Type</h4>
+                <h4 class="card-title mb-0">Add Weapon</h4>
             </div>
             <!-- end card-header -->
             <div class="card-body">

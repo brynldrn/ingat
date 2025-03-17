@@ -445,7 +445,7 @@ $conn->close();
                 <table class="table table-nowrap table-borderless table-sm table-centered mb-0">
                     <thead class="bg-light bg-opacity-50 thead-sm">
                         <tr>
-                            <th class="py-1">Crime</th>
+                            <th class="py-1">Incident</th>
                             <th class="py-1">Reports</th>
                             <th class="py-1">Perc.</th>
                         </tr>
@@ -556,7 +556,7 @@ $conn->close();
 <div class="col-lg-4">
     <div class="card">
         <div class="d-flex card-header justify-content-between align-items-center border-bottom border-dashed">
-            <h4 class="card-title mb-0">Locations of Crimes</h4>
+            <h4 class="card-title mb-0">Locations of Incident</h4>
         </div>
 
         <div class="card-body pt-0">
@@ -669,8 +669,8 @@ $conn->close();
                             <th class="py-1">ID</th>
                             <th class="py-1">Date</th>
                             <th class="py-1">Location</th>
-                            <th class="py-1">Category</th>
-                            <th class="py-1">Weapon</th>
+                            <th class="py-1">Incident</th>
+                            <th class="py-1">Weapon Involve</th>
                             <th class="py-1">Status</th>
                         </tr>
                     </thead>

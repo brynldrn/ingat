@@ -140,8 +140,8 @@ if (strlen($_SESSION['login']) == 0) {
                                 <th>Date Filed</th>
                                 <th>Last Update</th>
                                 <th>Status</th>
-                                <th>Crime Type</th>
-                                <th>Weapon Used</th>
+                                <th>Incident</th>
+                                <th>Weapon Involve</th>
                                 <th>Location</th>
                             </tr>
                         </thead>

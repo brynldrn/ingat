@@ -175,9 +175,9 @@ if ($complaint_details['complaint_file']) {
                         <td><?= htmlspecialchars($complaint_details['complaint_details']); ?></td>
                     </tr>
                     <tr>
-                        <th>Weapon Type</th>
+                        <th>Weapon Involve</th>
                         <td><?= htmlspecialchars($complaint_details['weapon_type'] ?? 'Not specified'); ?></td>
-                        <th>Crime Type</th>
+                        <th>Incident</th>
                         <td><?= htmlspecialchars($complaint_details['crime_type'] ?? 'Not specified'); ?></td>
                     </tr>
                     <tr>
