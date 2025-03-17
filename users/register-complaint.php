@@ -187,8 +187,8 @@ label[for="weapon"] {
                         </div>
                         <div class="row row-gap-4">
                             <div class="col-12 col-md-6 form-floating position-relative">
-                                <select name="crime_type" id="crime_type" class="form-control rounded-1">
-                                    <option value="">Select Incidents (Optional)</option>
+                                <select name="crime_type" id="crime_type" class="form-control rounded-1" required>
+                                    <option value="">Select Incidents</option>
                                     <?php foreach ($crime_types as $crime): ?>
                                         <option value="<?php echo $crime['id']; ?>"><?php echo htmlspecialchars($crime['crime_type']); ?></option>
                                     <?php endforeach; ?>
@@ -196,8 +196,8 @@ label[for="weapon"] {
                                 <label for="crime_type">Incidents</label>
                             </div>
                             <div class="col-12 col-md-6 form-floating position-relative">
-                                <select name="weapon" id="weapon" class="form-control rounded-1">
-                                    <option value="">Select Weapon Involve (Optional)</option>
+                                <select name="weapon" id="weapon" class="form-control rounded-1" required>
+                                    <option value="">Select Weapon Involve</option>
                                     <?php foreach ($weapons as $weapon): ?>
                                         <option value="<?php echo $weapon['id']; ?>"><?php echo htmlspecialchars($weapon['weapon_type']); ?></option>
                                     <?php endforeach; ?>
