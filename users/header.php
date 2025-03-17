@@ -222,29 +222,42 @@ foreach ($recent_complaints as $complaint) {
         width: 100%;
     }
     
-    .top-header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        z-index: 1001;
-        background: white;
-        padding: 10px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    .mobile-top-header {
+        display: none;
     }
     
-    .bottom-nav {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 1000;
-        background: white;
+    .mobile-bottom-nav {
+        display: none;
     }
     
     @media (max-width: 991px) {
+        .desktop-header {
+            display: none;
+        }
+        
+        .mobile-top-header {
+            display: flex;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            background: white;
+            padding: 10px;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .mobile-bottom-nav {
+            display: block;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: white;
+        }
+        
         body {
             padding-top: 65px;
             padding-bottom: 65px;
@@ -259,30 +272,26 @@ foreach ($recent_complaints as $complaint) {
         .mobile-search {
             display: none;
         }
-        
-        .desktop-header {
-            display: none;
-        }
     }
     
     @media (min-width: 992px) {
-        .top-header {
-            position: static;
-            padding: 0;
-        }
-        .bottom-nav {
+        .mobile-top-header {
             display: none;
         }
-        .mobile-search {
-            display: flex;
+        .mobile-bottom-nav {
+            display: none;
         }
         .desktop-header {
+            display: block;
+        }
+        .mobile-search {
             display: flex;
         }
     }
 </style>
 
-<div class="top-header">
+<!-- Mobile Top Header -->
+<div class="mobile-top-header shadow-sm bg-white">
     <div>
         <img src="../img/logo3.png" width="44px" height="auto">
     </div>
@@ -350,7 +359,8 @@ foreach ($recent_complaints as $complaint) {
     </div>
 </div>
 
-<div class="bottom-nav shadow-sm bg-white">
+<!-- Mobile Bottom Navigation -->
+<div class="mobile-bottom-nav shadow-sm bg-white">
     <div class="container-fluid px-1">
         <div class="row mx-0 w-100 align-items-center" style="min-height: 65px;">
             <div class="col-12">
@@ -379,9 +389,16 @@ foreach ($recent_complaints as $complaint) {
     </div>
 </div>
 
-<div class="header-container shadow-sm bg-white desktop-header">
+<!-- Desktop Header (Original Layout) -->
+<div class="header-container desktop-header shadow-sm bg-white">
     <div class="container-fluid px-1">
         <div class="row mx-0 w-100 align-items-center" style="min-height: 65px;">
+            <div class="col-12 col-lg-auto d-flex align-items-center justify-content-between pt-2 pt-lg-0">
+                <div>
+                    <img src="../img/logo3.png" width="44px" height="auto">
+                </div>
+            </div>
+            <hr class="m-0 mt-2 text-secondary d-lg-none">
             <div class="col-12 col-lg order-3 order-lg-2">
                 <ul class="navbar-nav navbar-text-color flex-row align-items-center justify-content-between justify-content-lg-center column-gap-4">
                     <li class="nav-item">
@@ -435,6 +452,66 @@ foreach ($recent_complaints as $complaint) {
                                    aria-label="Search" aria-describedby="basic-addon1" required>
                         </div>
                     </form>
+                </div>
+                <div class="d-none d-lg-flex">
+                    <div class="position-relative" style="height: 25px; width: 25px;">
+                        <a href="#" class="text-dark text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="badge text-bg-danger rounded-circle p-1 position-absolute" style="top: -4px; right: 0; font-size: 11px;">
+                                <?php echo $notification_count > 0 ? $notification_count : ''; ?>
+                            </span>
+                            <i class="ri-notification-line fs-5" style="height: 100%; width: 100%;"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                            <li class="notification-header">
+                                <h6>Activity Center</h6>
+                            </li>
+                            <?php if ($notification_count > 0): ?>
+                                <?php foreach ($notification_messages as $notif): ?>
+                                    <li class="notification-item" data-complaint-number="<?php echo htmlspecialchars($notif['complaint_number']); ?>">
+                                        <div class="notification-content">
+                                            <p><?php echo $notif['message']; ?></p>
+                                            <small><?php echo htmlspecialchars($notif['time_ago']); ?></small>
+                                        </div>
+                                    </li>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <li class="notification-item">
+                                    <div class="notification-content">
+                                        <p>No new notifications</p>
+                                    </div>
+                                </li>
+                            <?php endif; ?>
+                            <li class="notification-footer">
+                                <a href="status.php">See All</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="dropdown d-none d-lg-flex">
+                    <div id="header-profile" class="btn btn-outline-secondary d-flex align-items-center border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="me-2">
+                            <i class="ri-user-line text-dark"></i>
+                        </span>
+                        <div class="d-flex align-items-center">
+                            <span class="text-dark text-nowrap"> <?= htmlentities($_SESSION['displayName']); ?></span>
+                            <i class="ri-arrow-drop-down-line text-dark fs-4"></i>
+                        </div>
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end" style="width: 14rem;">
+                        <li>
+                            <a class="dropdown-item" href="profile.php">
+                                <i class="ri-user-3-line"></i> 
+                                Profile
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item text-danger" href="logout.php">
+                                <i class="ri-logout-circle-r-line"></i>
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
                 </div>
             </div>
         </div>
