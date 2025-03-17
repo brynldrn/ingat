@@ -154,7 +154,6 @@ foreach ($recent_complaints as $complaint) {
 }
 ?>
 
-
 <style>
     .notification-dropdown .dropdown-menu {
         width: 300px;
@@ -217,82 +216,172 @@ foreach ($recent_complaints as $complaint) {
     .complaint-link:hover {
         text-decoration: none;
     }
+    
+    .header-container {
+        position: relative;
+        width: 100%;
+    }
+    
+    .top-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1001;
+        background: white;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: white;
+    }
+    
+    @media (max-width: 991px) {
+        body {
+            padding-top: 65px;
+            padding-bottom: 65px;
+        }
+        
+        .navbar-nav {
+            flex-direction: row !important;
+            justify-content: space-around !important;
+            width: 100%;
+        }
+        
+        .mobile-search {
+            display: none;
+        }
+        
+        .desktop-header {
+            display: none;
+        }
+    }
+    
+    @media (min-width: 992px) {
+        .top-header {
+            position: static;
+            padding: 0;
+        }
+        .bottom-nav {
+            display: none;
+        }
+        .mobile-search {
+            display: flex;
+        }
+        .desktop-header {
+            display: flex;
+        }
+    }
 </style>
 
-<div class="shadow-sm d-flex align-items-center bg-white" style="min-height: 65px;">
-    <div class="container-fluid px-1">
-        <div class="row mx-0 w-100">
-            <div class="col-12 col-lg-auto d-flex align-items-center justify-content-between pt-2 pt-lg-0">
-                <div>
-                    <img src="../img/logo3.png" width="44px" height="auto">
-                </div>
-                <div class="d-flex d-lg-none align-items-center column-gap-4">
-                    <div>
-                        <div class="position-relative" style="height: 25px; width: 25px;">
-                            <a href="#" class="text-dark text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="badge text-bg-danger rounded-circle p-1 position-absolute" style="top: -4px; right: 0; font-size: 11px;">
-                                    <?php echo $notification_count > 0 ? $notification_count : ''; ?>
-                                </span>
-                                <i class="ri-notification-line fs-5" style="height: 100%; width: 100%;"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
-                                <li class="notification-header">
-                                    <h6>Activity Center</h6>
-                                </li>
-                                <?php if ($notification_count > 0): ?>
-                                    <?php foreach ($notification_messages as $notif): ?>
-                                        <li class="notification-item" data-complaint-number="<?php echo htmlspecialchars($notif['complaint_number']); ?>">
-                                            <div class="notification-content">
-                                                <p><?php echo $notif['message']; ?></p>
-                                                <small><?php echo htmlspecialchars($notif['time_ago']); ?></small>
-                                            </div>
-                                        </li>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <li class="notification-item">
-                                        <div class="notification-content">
-                                            <p>No new notifications</p>
-                                        </div>
-                                    </li>
-                                <?php endif; ?>
-                                <li class="notification-footer">
-                                    <a href="status.php">See All</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="dropdown">
-                        <div id="header-profile" class="btn btn-outline-secondary d-flex align-items-center border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            <span class="me-2">
-                                <i class="ri-user-line text-dark"></i>
-                            </span>
-                            <div class="d-flex align-items-center">
-                                <span class="text-dark text-nowrap">
-                                    <?= htmlentities($_SESSION['displayName']); ?>
-                                </span>
-                                <i class="ri-arrow-drop-down-line text-dark fs-4"></i>
+<div class="top-header">
+    <div>
+        <img src="../img/logo3.png" width="44px" height="auto">
+    </div>
+    <div class="d-flex align-items-center column-gap-2">
+        <div class="position-relative" style="height: 25px; width: 25px;">
+            <a href="#" class="text-dark text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="badge text-bg-danger rounded-circle p-1 position-absolute" style="top: -4px; right: 0; font-size: 11px;">
+                    <?php echo $notification_count > 0 ? $notification_count : ''; ?>
+                </span>
+                <i class="ri-notification-line fs-5" style="height: 100%; width: 100%;"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
+                <li class="notification-header">
+                    <h6>Activity Center</h6>
+                </li>
+                <?php if ($notification_count > 0): ?>
+                    <?php foreach ($notification_messages as $notif): ?>
+                        <li class="notification-item" data-complaint-number="<?php echo htmlspecialchars($notif['complaint_number']); ?>">
+                            <div class="notification-content">
+                                <p><?php echo $notif['message']; ?></p>
+                                <small><?php echo htmlspecialchars($notif['time_ago']); ?></small>
                             </div>
+                        </li>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <li class="notification-item">
+                        <div class="notification-content">
+                            <p>No new notifications</p>
                         </div>
-                        <ul class="dropdown-menu dropdown-menu-end" style="width: 14rem;">
-                            <li>
-                                <a class="dropdown-item" href="profile.php">
-                                    <i class="ri-user-3-line"></i> 
-                                    Profile
-                                </a>
-                            </li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="logout.php">
-                                    <i class="ri-logout-circle-r-line"></i>
-                                    Logout
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
+                    </li>
+                <?php endif; ?>
+                <li class="notification-footer">
+                    <a href="status.php">See All</a>
+                </li>
+            </ul>
+        </div>
+        <div class="dropdown">
+            <div id="header-profile" class="btn btn-outline-secondary d-flex align-items-center border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <span class="me-2">
+                    <i class="ri-user-line text-dark"></i>
+                </span>
+                <div class="d-flex align-items-center">
+                    <span class="text-dark text-nowrap">
+                        <?= htmlentities($_SESSION['displayName']); ?>
+                    </span>
+                    <i class="ri-arrow-drop-down-line text-dark fs-4"></i>
                 </div>
             </div>
-            <hr class="m-0 mt-2 text-secondary d-lg-none">
-            <hr class="m-0 mt-3 text-secondary order-3 d-lg-none">
+            <ul class="dropdown-menu dropdown-menu-end" style="width: 14rem;">
+                <li>
+                    <a class="dropdown-item" href="profile.php">
+                        <i class="ri-user-3-line"></i> 
+                        Profile
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider"></li>
+                <li>
+                    <a class="dropdown-item text-danger" href="logout.php">
+                        <i class="ri-logout-circle-r-line"></i>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="bottom-nav shadow-sm bg-white">
+    <div class="container-fluid px-1">
+        <div class="row mx-0 w-100 align-items-center" style="min-height: 65px;">
+            <div class="col-12">
+                <ul class="navbar-nav navbar-text-color flex-row align-items-center justify-content-between column-gap-4">
+                    <li class="nav-item">
+                        <a href="dashboard.php" class="nav-link d-flex flex-column text-center column-gap-1 px-2 rounded-2">
+                            <i class="ri-home-4-line fs-5"></i>
+                            <small>Home</small>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="register-complaint.php" class="nav-link d-flex flex-column text-center column-gap-1 px-2 rounded-2">
+                            <i class="ri-shield-line fs-5"></i>
+                            <small>Report</small>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="status.php" class="nav-link d-flex flex-column text-center column-gap-1 px-2 rounded-2">
+                            <i class="ri-pie-chart-line fs-5"></i>
+                            <small>Status</small>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="header-container shadow-sm bg-white desktop-header">
+    <div class="container-fluid px-1">
+        <div class="row mx-0 w-100 align-items-center" style="min-height: 65px;">
             <div class="col-12 col-lg order-3 order-lg-2">
                 <ul class="navbar-nav navbar-text-color flex-row align-items-center justify-content-between justify-content-lg-center column-gap-4">
                     <li class="nav-item">
@@ -334,7 +423,7 @@ foreach ($recent_complaints as $complaint) {
                 </ul>
             </div>
             <div class="col-12 col-lg-auto order-2 order-lg-3 d-flex align-items-center column-gap-5 mt-3 mt-lg-0">
-                <div class="w-100">
+                <div class="w-100 mobile-search">
                     <form method="POST" action="">
                         <div class="input-group" style="width: 100%;">
                             <span class="input-group-text border-end-0" id="basic-addon1">
@@ -346,68 +435,6 @@ foreach ($recent_complaints as $complaint) {
                                    aria-label="Search" aria-describedby="basic-addon1" required>
                         </div>
                     </form>
-                </div>
-                <div class="d-none d-lg-flex">
-                    <div>
-                        <div class="position-relative" style="height: 25px; width: 25px;">
-                            <a href="#" class="text-dark text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-                                <span class="badge text-bg-danger rounded-circle p-1 position-absolute" style="top: -4px; right: 0; font-size: 11px;">
-                                    <?php echo $notification_count > 0 ? $notification_count : ''; ?>
-                                </span>
-                                <i class="ri-notification-line fs-5" style="height: 100%; width: 100%;"></i>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end notification-dropdown">
-                                <li class="notification-header">
-                                    <h6>Activity Center</h6>
-                                </li>
-                                <?php if ($notification_count > 0): ?>
-                                    <?php foreach ($notification_messages as $notif): ?>
-                                        <li class="notification-item" data-complaint-number="<?php echo htmlspecialchars($notif['complaint_number']); ?>">
-                                            <div class="notification-content">
-                                                <p><?php echo $notif['message']; ?></p>
-                                                <small><?php echo htmlspecialchars($notif['time_ago']); ?></small>
-                                            </div>
-                                        </li>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <li class="notification-item">
-                                        <div class="notification-content">
-                                            <p>No new notifications</p>
-                                        </div>
-                                    </li>
-                                <?php endif; ?>
-                                <li class="notification-footer">
-                                    <a href="status.php">See All</a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="dropdown d-none d-lg-flex">
-                    <div id="header-profile" class="btn btn-outline-secondary d-flex align-items-center border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="me-2">
-                            <i class="ri-user-line text-dark"></i>
-                        </span>
-                        <div class="d-flex align-items-center">
-                            <span class="text-dark text-nowrap"> <?= htmlentities($_SESSION['displayName']); ?></span>
-                            <i class="ri-arrow-drop-down-line text-dark fs-4"></i>
-                        </div>
-                    </div>
-                    <ul class="dropdown-menu dropdown-menu-end" style="width: 14rem;">
-                        <li>
-                            <a class="dropdown-item" href="profile.php">
-                                <i class="ri-user-3-line"></i> 
-                                Profile
-                            </a>
-                        </li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item text-danger" href="logout.php">
-                                <i class="ri-logout-circle-r-line"></i>
-                                Logout
-                            </a>
-                        </li>
-                    </ul>
                 </div>
             </div>
         </div>
@@ -431,7 +458,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-
                     let badges = document.querySelectorAll('.badge.text-bg-danger');
                     badges.forEach(badge => {
                         let currentCount = parseInt(badge.textContent) || 0;
@@ -442,10 +468,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     });
 
-
                     let item = this.closest('.notification-item');
                     if (item) item.style.opacity = '0.5';
-
 
                     window.location.href = this.getAttribute('href');
                 } else {
