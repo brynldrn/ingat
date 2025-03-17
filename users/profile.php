@@ -288,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
                                                          width="100" height="auto" class="bg-white rounded border" id="id-preview">
                                                 </div>
                                                 <div>
-                                                    <p class="text-center">Upload a valid ID for verification.</p>
+                                                    <p class="text-center">Upload a valid ID(optional).</p>
                                                     <div class="d-flex align-items-center justify-content-center justify-content-lg-start column-gap-2">
                                                         <label for="upload_id" class="upload-label px-2 py-1">
                                                             <i class="ri-id-card-line"></i>
