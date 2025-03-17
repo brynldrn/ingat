@@ -1,11 +1,14 @@
 <?php
-$mysql_hostname = "localhost";
-$mysql_user = "root";
-$mysql_password = "";
-$mysql_database = "ingat_db";
-$conn = mysqli_connect($mysql_hostname, $mysql_user, $mysql_password, $mysql_database) or die("Could not connect database");
+$servername = "ingat-db.c1qrsgyhssje.ap-southeast-1.rds.amazonaws.com"; 
+$username = "admin"; 
+$password = "password"; 
+$dbname = "ingat_db";
+$port = 3306; 
 
-if (!$conn) {
-    die("Connection failed: " . mysqli_connect_error());
-}
+
+$conn = new mysqli($servername, $username, $password, $dbname, $port);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+} ;
 ?>
