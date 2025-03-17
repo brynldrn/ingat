@@ -1,13 +1,13 @@
 <?php
 session_start();
 include('include/config.php');
-if(strlen($_SESSION['alogin'])==0)
-{   
+
+if (empty($_SESSION['alogin'])) {
     header('location:index.php');
+    exit;
 }
-else {
-    date_default_timezone_set('Asia/Kolkata'); // change according timezone
-    $currentTime = date( 'd-m-Y h:i:s A', time() );
+
+date_default_timezone_set('Asia/Manila'); // Match your sample data timezone
 ?>
 
 <!DOCTYPE html>
@@ -19,32 +19,23 @@ else {
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#ffffff">
-    <!-- App icon -->
     <link rel="shortcut icon" href="assets/images/ingat.ico">
-    <!-- Google Font Family link -->
     <link rel="preconnect" href="https://fonts.googleapis.com/">
     <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&amp;display=swap" rel="stylesheet">
-    <!-- Vendor css -->
+    <link href="https://fonts.googleapis.com/css2?family=Play:wght@400;700&display=swap" rel="stylesheet">
     <link href="assets/css/vendor.min.css" rel="stylesheet" type="text/css" />
-    <!-- Icons css -->
     <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
-    <!-- App css -->
     <link href="assets/css/style.min.css" rel="stylesheet" type="text/css" />
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
-    <!-- Custom DataTables CSS -->
     <link rel="stylesheet" href="assets/css/table.dataTable-th.css">
-    <!-- Theme Config js -->
     <script src="assets/js/config.js"></script>
     <style>
         table.dataTable tbody tr:nth-child(2n+1) {
-            background-color:rgba(238, 237, 235, 0.03);
+            background-color: rgba(238, 237, 235, 0.03);
         }
         table.dataTable tbody tr {
-            background-color:rgba(255, 255, 255, 0.07);
+            background-color: rgba(255, 255, 255, 0.07);
         }
-
         .dataTables_wrapper .dataTables_length, 
         .dataTables_wrapper .dataTables_filter, 
         .dataTables_wrapper .dataTables_info, 
@@ -52,23 +43,24 @@ else {
             color: inherit;
             margin-bottom: 20px;
         }
-
         .dataTables_wrapper .dataTables_length select {
             border: 1px solid #aaa;
             border-radius: 3px;
             padding: 5px;
             background-color: #ffebcd05;
         }
-
         table.dataTable.no-footer {
             border-bottom: 1px solid #0d0d0d26;
         }
-
         @media (min-width: 1200px) {
             .offset-xl-3 {
                 margin-left: 22%;
                 margin-top: 2%;
             }
+        }
+        .anonymous-text {
+            font-style: italic;
+            color: #6c757d;
         }
     </style>
 </head>
@@ -104,47 +96,66 @@ else {
                             </tr>
                         </thead>
                         <tbody>
-                        <?php 
-$query = mysqli_query($conn, "SELECT c.complaint_number, u.firstname, u.middlename, u.lastname, c.registered_at, c.anonymous 
-                              FROM tblcomplaints c 
-                              LEFT JOIN users u ON u.id = c.userId 
-                              WHERE c.status IS NULL 
-                              AND (c.userId IS NOT NULL OR c.anonymous = 1) 
-                              AND c.crime_type_id IS NOT NULL 
-                              AND c.weapon_id IS NOT NULL 
-                              LIMIT 0, 25;");
-if (mysqli_num_rows($query) > 0) {
-    while ($row = mysqli_fetch_array($query)) {
-        $date = new DateTime($row['registered_at']);
-        // Combine first, middle, and last names
-        $name = $row['firstname'];
-        $name .= (!empty($row['middlename']) ? ' ' . $row['middlename'] : '');
-        $name .= ' ' . $row['lastname'];
-?>
+                        <?php
+                        $query = mysqli_query($conn, "
+                            SELECT 
+                                c.complaint_number, 
+                                c.userId, 
+                                c.registered_at, 
+                                c.anonymous, 
+                                u.firstname, 
+                                u.middlename, 
+                                u.lastname 
+                            FROM tblcomplaints c 
+                            LEFT JOIN users u ON u.id = c.userId 
+                            WHERE c.status IS NULL 
+                            ORDER BY c.registered_at DESC 
+                            LIMIT 0, 25
+                        ");
+
+                        if (mysqli_num_rows($query) > 0) {
+                            $count = 1;
+                            while ($row = mysqli_fetch_array($query)) {
+                                $date = new DateTime($row['registered_at']);
+                                if ($row['anonymous'] == 1) {
+                                    $complainant = '<span class="anonymous-text">Anonymous</span>';
+                                } else {
+                                    $name = trim(
+                                        ($row['firstname'] ?? '') . 
+                                        (!empty($row['middlename']) ? ' ' . $row['middlename'] : '') . 
+                                        ' ' . ($row['lastname'] ?? '')
+                                    );
+                                    $complainant = $name ? htmlentities($name) : 'Unknown User';
+                                }
+                        ?>
                             <tr>
                                 <td><?php echo htmlentities($row['complaint_number']); ?></td>
-                                <td><?php echo $row['anonymous'] ? 'Anonymous' : htmlentities($name); ?></td>
+                                <td><?php echo $complainant; ?></td>
                                 <td><?php echo $date->format('m/d/Y h:i A'); ?></td>
                                 <td><span class="status-highlight">New Complaint</span></td>
-                                <td><a href="complaint-details.php?cid=<?php echo htmlentities($row['complaint_number']); ?>" class="btn btn-sm btn-primary">View Details</a></td>
+                                <td>
+                                    <a href="complaint-details.php?cid=<?php echo htmlentities($row['complaint_number']); ?>" 
+                                       class="btn btn-sm btn-primary">View Details</a>
+                                </td>
                             </tr>
-<?php 
-    }
-} else {
-?>
+                        <?php
+                                $count++;
+                            }
+                        } else {
+                        ?>
                             <tr>
-                                <td colspan="5" class="text-center">No complaints have been submitted yet.</td>
+                                <td colspan="5" class="text-center">No new complaints have been submitted yet.</td>
                             </tr>
-<?php 
-}
-?>
-
+                        <?php
+                        }
+                        ?>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-    </div>
+
+</div>
 
 <?php include('include/footer.php'); ?>
 
@@ -160,10 +171,10 @@ if (mysqli_num_rows($query) > 0) {
             "searching": true,
             "ordering": true,
             "info": true,
-            "paging": true
+            "paging": true,
+            "order": [[2, 'desc']] // Default sort by Date Filed column (index 2) descending
         });
     });
 </script>
 </body>
 </html>
-<?php } ?>
