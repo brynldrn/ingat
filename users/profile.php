@@ -162,6 +162,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save-changes'])) {
         flex: 1;
         min-width: 300px;
     }
+    form#profile-form {
+    margin-bottom: 15%;
+}
 </style>
 
 <body>
