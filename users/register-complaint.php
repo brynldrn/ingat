@@ -2,6 +2,8 @@
 session_start();
 include('includes/config.php');
 
+date_default_timezone_set('Asia/Manila');
+
 if (strlen($_SESSION['login']) == 0) {
     header('location:index.php');
     exit();
@@ -14,6 +16,7 @@ $crime_types_query = mysqli_query($conn, "SELECT id, crime_type FROM crime_types
 $crime_types = mysqli_fetch_all($crime_types_query, MYSQLI_ASSOC);
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    date_default_timezone_set('Asia/Manila');
     $userId = $_SESSION['userId'];
     $location = mysqli_real_escape_string($conn, $_POST['locations']);
     $complain_details = mysqli_real_escape_string($conn, $_POST['description']);
@@ -138,10 +141,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $complaint_number = 'CMP-' . time() . '-' . rand(1000, 9999);
     $complaint_file = implode(',', $complaint_files);
 
+    $current_time = date('Y-m-d H:i:s');
     $stmt = $conn->prepare("INSERT INTO tblcomplaints (complaint_number, userId, location, complaint_details, complaint_file, registered_at, last_updated_at, anonymous, weapon_id, crime_type_id) 
-                            VALUES (?, ?, ?, ?, ?, NOW(), NOW(), ?, ?, ?)");
-    $stmt->bind_param('sisssiii', $complaint_number, $userId, $location, $complain_details, $complaint_file, $anonymous, $weapon_id, $crime_type_id);
-
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param('sisssssiii', $complaint_number, $userId, $location, $complain_details, $complaint_file, $current_time, $current_time, $anonymous, $weapon_id, $crime_type_id);
     if ($stmt->execute()) {
         if ($anonymous) {
             if (!isset($_SESSION['anonymous_complaint_ids'])) {

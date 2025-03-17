@@ -127,7 +127,7 @@ date_default_timezone_set('Asia/Manila');
             </div>
         </div>
     </div>
-</div>
+
 
 <?php include('include/footer.php'); ?>
 
