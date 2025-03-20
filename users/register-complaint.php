@@ -70,15 +70,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $mimeType = mime_content_type($_FILES["docs"]["tmp_name"][$i]);
 
         if (move_uploaded_file($_FILES["docs"]["tmp_name"][$i], $target_file)) {
-            $endpoint = in_array($fileType, $allowedImageTypes) 
-                ? 'https://api.sightengine.com/1.0/check.json' 
-                : 'https://api.sightengine.com/1.0/video/check-sync.json';
+            $endpoint = 'https://api.sightengine.com/1.0/check.json';
 
             $params = array(
                 'media' => new CURLFile($target_file),
-                'models' => in_array($fileType, $allowedImageTypes) ? 'nudity-2.1,genai' : 'nudity-2.1',
-                'api_user' => '1416104846', // Move to config file in production
-                'api_secret' => 'UXy45ViuNa9MuTQSoQySheWUwduA3y8F', // Move to config file in production
+                'models' => 'genai',
+                'api_user' => '1403739033',
+                'api_secret' => 'chirtiFq4wzTxdb2nEff32sGUKqezYwv',
             );
 
             $ch = curl_init($endpoint);
@@ -86,65 +84,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
             $response = curl_exec($ch);
+            $curl_error = curl_error($ch);
             curl_close($ch);
 
-            $output = json_decode($response, true);
+            if ($response === false) {
+                echo '<script>alert("API request failed for ' . htmlspecialchars($compfile) . ': ' . htmlspecialchars($curl_error) . '"); window.history.back();</script>';
+                unlink($target_file);
+                foreach ($complaint_files as $file) {
+                    unlink($file);
+                }
+                exit();
+            }
 
-            // Debug: Log the API response
+            $output = json_decode($response, true);
             file_put_contents('sightengine_log.txt', "File: $compfile\nResponse: " . json_encode($output) . "\n\n", FILE_APPEND);
 
-            if (in_array($fileType, $allowedImageTypes)) {
-                if (!isset($output['nudity']) || !isset($output['nudity']['none'])) {
-                    echo '<script>alert("Error: Invalid response from nudity detection API for ' . htmlspecialchars($compfile) . '. Please try again."); window.history.back();</script>';
-                    unlink($target_file);
-                    foreach ($complaint_files as $file) {
-                        unlink($file);
-                    }
-                    exit();
+            if (!isset($output['status']) || $output['status'] !== 'success' || !isset($output['type'])) {
+                $errorMsg = isset($output['error']) ? $output['error'] : 'Invalid response structure';
+                echo '<script>alert("Error: Invalid response from AI detection API for ' . htmlspecialchars($compfile) . '. Details: ' . htmlspecialchars($errorMsg) . '"); window.history.back();</script>';
+                unlink($target_file);
+                foreach ($complaint_files as $file) {
+                    unlink($file);
                 }
+                exit();
+            }
 
-                $nudityNone = $output['nudity']['none'];
-                $aiGenerated = isset($output['type']['ai_generated']) ? $output['type']['ai_generated'] : 0;
+            $aiGenerated = isset($output['type']['ai_generated']) ? $output['type']['ai_generated'] : 0;
+            $aiThreshold = 0.05; // 5% threshold, stricter than before
 
-                // Calculate nudity score from explicit categories
-                $nudityScore = 0;
-                $nudityCategories = ['sexual_activity', 'sexual_display', 'erotica', 'very_suggestive', 'suggestive', 'mildly_suggestive'];
-                foreach ($nudityCategories as $category) {
-                    $nudityScore += isset($output['nudity'][$category]) ? $output['nudity'][$category] : 0;
+            if ($aiGenerated > $aiThreshold) {
+                echo '<script>alert("File ' . htmlspecialchars($compfile) . ' is AI-generated (Confidence: ' . round($aiGenerated * 100, 2) . '%). Cannot be uploaded."); window.history.back();</script>';
+                unlink($target_file);
+                foreach ($complaint_files as $file) {
+                    unlink($file);
                 }
-
-                if ($nudityScore > 0.1) { // 10% nudity threshold
-                    echo '<script>alert("File ' . htmlspecialchars($compfile) . ' contains nudity (Score: ' . round($nudityScore * 100, 2) . '%) and cannot be uploaded."); window.history.back();</script>';
-                    unlink($target_file);
-                    foreach ($complaint_files as $file) {
-                        unlink($file);
-                    }
-                    exit();
-                } elseif ($aiGenerated > 0.05) { // 5% AI threshold (adjusted from 1%)
-                    echo '<script>alert("File ' . htmlspecialchars($compfile) . ' is AI-generated (' . round($aiGenerated * 100, 2) . '%) and cannot be uploaded."); window.history.back();</script>';
-                    unlink($target_file);
-                    foreach ($complaint_files as $file) {
-                        unlink($file);
-                    }
-                    exit();
-                }
-            } else {
-                $frames = $output['data']['frames'] ?? [];
-                $hasNudity = false;
-                foreach ($frames as $frame) {
-                    if (isset($frame['nudity']['none']) && $frame['nudity']['none'] < 0.9) { // 90% threshold for videos
-                        $hasNudity = true;
-                        break;
-                    }
-                }
-                if ($hasNudity) {
-                    echo '<script>alert("File ' . htmlspecialchars($compfile) . ' contains nudity and cannot be uploaded."); window.history.back();</script>';
-                    unlink($target_file);
-                    foreach ($complaint_files as $file) {
-                        unlink($file);
-                    }
-                    exit();
-                }
+                exit();
             }
 
             $complaint_files[] = $target_file;
@@ -405,7 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         scanResult.style.display = 'block';
-        scanResult.innerText = 'Scanning...';
+        scanResult.innerText = 'Scanning for AI-generated content...';
         scanResult.style.color = 'orange';
         submitBtn.disabled = true;
 
@@ -416,13 +390,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const file = files[i];
             const formData = new FormData();
             formData.append('media', file);
-            const isImage = file.type.startsWith('image/');
-            formData.append('models', isImage ? 'nudity-2.1,genai' : 'nudity-2.1');
-            formData.append('api_user', '1416104846'); // Match PHP credentials
-            formData.append('api_secret', 'UXy45ViuNa9MuTQSoQySheWUwduA3y8F'); // Match PHP credentials
-            const endpoint = isImage 
-                ? 'https://api.sightengine.com/1.0/check.json' 
-                : 'https://api.sightengine.com/1.0/video/check-sync.json';
+            formData.append('models', 'genai');
+            formData.append('api_user', '1403739033');
+            formData.append('api_secret', 'chirtiFq4wzTxdb2nEff32sGUKqezYwv');
+            const endpoint = 'https://api.sightengine.com/1.0/check.json';
 
             fetch(endpoint, {
                 method: 'POST',
@@ -430,46 +401,17 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
-                if (isImage) {
-                    const nudityCategories = ['sexual_activity', 'sexual_display', 'erotica', 'very_suggestive', 'suggestive', 'mildly_suggestive'];
-                    let nudityScore = 0;
-                    if (data.nudity) {
-                        nudityCategories.forEach(category => {
-                            nudityScore += data.nudity[category] || 0;
-                        });
-                    }
-                    nudityScore *= 100; // Convert to percentage
-                    const aiGenerated = data.type && data.type.ai_generated ? (data.type.ai_generated * 100) : 0;
+                console.log(`API Response for ${file.name}:`, data);
+                const aiGenerated = data.type && data.type.ai_generated ? data.type.ai_generated : 0;
+                const aiThreshold = 0.05; // 5% threshold
 
-                    if (nudityScore > 10) {
-                        scanResult.innerText = `Warning! Nudity detected in ${file.name}: ${nudityScore.toFixed(2)}%`;
-                        scanResult.style.color = 'red';
-                        submitBtn.disabled = true;
-                    } else if (aiGenerated > 5) { // 5% threshold to match PHP
-                        scanResult.innerText = `Warning! AI-generated content in ${file.name}: ${aiGenerated.toFixed(2)}%`;
-                        scanResult.style.color = 'red';
-                        submitBtn.disabled = true;
-                    } else {
-                        cleanFiles++;
-                        updateScanResult(cleanFiles, totalFiles);
-                    }
+                if (aiGenerated > aiThreshold) {
+                    scanResult.innerText = `Warning! AI-generated content detected in ${file.name}: ${(aiGenerated * 100).toFixed(2)}%`;
+                    scanResult.style.color = 'red';
+                    submitBtn.disabled = true;
                 } else {
-                    const frames = data.data && data.data.frames ? data.data.frames : [];
-                    let hasNudity = false;
-                    for (const frame of frames) {
-                        if (frame.nudity && frame.nudity.none < 0.9) { // 90% threshold for videos
-                            hasNudity = true;
-                            break;
-                        }
-                    }
-                    if (hasNudity) {
-                        scanResult.innerText = `Warning! Nudity detected in video ${file.name}.`;
-                        scanResult.style.color = 'red';
-                        submitBtn.disabled = true;
-                    } else {
-                        cleanFiles++;
-                        updateScanResult(cleanFiles, totalFiles);
-                    }
+                    cleanFiles++;
+                    updateScanResult(cleanFiles, totalFiles);
                 }
             })
             .catch(error => {
@@ -483,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateScanResult(cleanFiles, totalFiles) {
         if (cleanFiles === totalFiles) {
-            scanResult.innerText = 'All files are clean. You can submit.';
+            scanResult.innerText = 'All files are clean (not AI-generated). You can submit.';
             scanResult.style.color = 'green';
             checkFormValidity();
         } else {
@@ -499,7 +441,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const scanResult = document.getElementById('scanResult');
         const submitBtn = document.getElementById('submitBtn');
 
-        if (location && description && fileInput.files.length > 0 && fileInput.files.length <= 3 && scanResult.innerText === 'All files are clean. You can submit.') {
+        if (location && description && fileInput.files.length > 0 && fileInput.files.length <= 3 && scanResult.innerText === 'All files are clean (not AI-generated). You can submit.') {
             submitBtn.disabled = false;
         } else {
             submitBtn.disabled = true;
