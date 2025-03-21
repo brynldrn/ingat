@@ -76,7 +76,7 @@ if (strlen($_SESSION['alogin']) == 0) {
 
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">In Process</h4>
+            <h4 class="card-title mb-0">In Process</h4>
             </div>
 
             <div class="card-body">
@@ -93,23 +93,53 @@ if (strlen($_SESSION['alogin']) == 0) {
                         </thead>
                         <tbody>
                         <?php 
-                        $query = mysqli_query($conn, "SELECT c.complaint_number, u.firstname, u.middlename, u.lastname, c.registered_at, c.status, c.anonymous FROM tblcomplaints c JOIN users u ON u.id = c.userId WHERE c.status = 'In Progress' LIMIT 0, 25;");
-                        while ($row = mysqli_fetch_array($query)) {
-                            $date = new DateTime($row['registered_at']);
-                            $name = $row['anonymous'] == 1 
-                                ? '<span class="anonymous-text">Anonymous</span>' 
-                                : (trim(($row['firstname'] ?? '') . ' ' . 
-                                       (!empty($row['middlename']) ? $row['middlename'] . ' ' : '') . 
-                                       ($row['lastname'] ?? '')) ?: 'Unknown User');
+                        $query = mysqli_query($conn, "
+                            SELECT 
+                                c.complaint_number, 
+                                c.userId, 
+                                c.registered_at, 
+                                c.anonymous, 
+                                u.firstname, 
+                                u.middlename, 
+                                u.lastname,
+                                c.status
+                            FROM tblcomplaints c 
+                            LEFT JOIN users u ON u.id = c.userId 
+                            WHERE c.status = 'In Progress' 
+                            LIMIT 0, 25
+                        ");
+
+                        if (mysqli_num_rows($query) > 0) {
+                            while ($row = mysqli_fetch_array($query)) {
+                                $date = new DateTime($row['registered_at']);
+                                if ($row['anonymous'] == 1) {
+                                    $complainant = '<span class="anonymous-text">Anonymous</span>';
+                                } else {
+                                    $name = trim(
+                                        ($row['firstname'] ?? '') . 
+                                        (!empty($row['middlename']) ? ' ' . $row['middlename'] : '') . 
+                                        ' ' . ($row['lastname'] ?? '')
+                                    );
+                                    $complainant = $name ? htmlentities($name) : 'Unknown User';
+                                }
                         ?>
                             <tr>
                                 <td><?php echo htmlentities($row['complaint_number']); ?></td>
-                                <td><?php echo $name; ?></td>
+                                <td><?php echo $complainant; ?></td>
                                 <td><?php echo $date->format('m/d/Y h:i A'); ?></td>
                                 <td><?php echo htmlentities($row['status']); ?></td>
                                 <td><a href="complaint-details.php?cid=<?php echo htmlentities($row['complaint_number']); ?>" class="btn btn-sm btn-primary">View Details</a></td>
                             </tr>
-                        <?php } ?>
+                        <?php
+                            }
+                        } else {
+                        ?>
+                            <tr>
+                                <td colspan="5" class="text-center">No complaints in progress.</td>
+                            </tr>
+                        <?php
+                        }
+                        ?>
                         </tbody>
                     </table>
                 </div>
