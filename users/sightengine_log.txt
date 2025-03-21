@@ -1,3 +1,12 @@
 File: 930efe0e-5678-4951-931b-20bfa895bfdc.jpg
 Response: {"status":"success","request":{"id":"req_i7VAq3FKBlcBrr8rOXSI0","timestamp":1742451754.716535,"operations":6},"nudity":{"sexual_activity":0.001,"sexual_display":0.001,"erotica":0.001,"very_suggestive":0.001,"suggestive":0.001,"mildly_suggestive":0.001,"suggestive_classes":{"bikini":0.001,"cleavage":0.001,"cleavage_categories":{"very_revealing":0.001,"revealing":0.001,"none":0.99},"lingerie":0.001,"male_chest":0.001,"male_chest_categories":{"very_revealing":0.001,"revealing":0.001,"slightly_revealing":0.001,"none":0.99},"male_underwear":0.001,"miniskirt":0.001,"minishort":0.001,"nudity_art":0.001,"schematic":0.001,"sextoy":0.001,"suggestive_focus":0.001,"suggestive_pose":0.001,"swimwear_male":0.001,"swimwear_one_piece":0.001,"visibly_undressed":0.001,"other":0.001},"none":0.99,"context":{"sea_lake_pool":0.001,"outdoor_other":0.23,"indoor_other":0.77}},"type":{"ai_generated":0.01},"media":{"id":"med_i7VAEA93j82JHoNq5yghc","uri":"67dbb42902e5c930efe0e-5678-4951-931b-20bfa895bfdc.jpg"}}
 
+File: c10.jpg
+Response: {"status":"failure","request":{"id":"req_i8aLLpQjuUwvrC1XYMcCa","timestamp":1742508232.794905,"operations":0},"error":{"type":"usage_limit","code":32,"message":"Daily usage limit reached. You are under a Free plan. Free plans have a daily usage limit. Please upgrade your plan to continue using this API: https:\/\/sightengine.com\/pricing"}}
+
+File: pnp.jpeg
+Response: {"status":"failure","request":{"id":"req_i8aMzglAAsOxdcqxCzxqs","timestamp":1742508274.362678,"operations":0},"error":{"type":"usage_limit","code":32,"message":"Daily usage limit reached. You are under a Free plan. Free plans have a daily usage limit. Please upgrade your plan to continue using this API: https:\/\/sightengine.com\/pricing"}}
+
+File: the-10-strong-unit-was.jpg
+Response: {"status":"success","request":{"id":"req_i8bhBrHmi5oeH19RtYf7c","timestamp":1742510102.678182,"operations":5},"type":{"ai_generated":0.01},"media":{"id":"med_i8bhHQjw51Ui11ExUORFy","uri":"67dc981430126the-10-strong-unit-was.jpg"}}
+
