@@ -1,6 +1,7 @@
 <?php 
 include "includes/config.php";
 include "plugins-header.php";
+date_default_timezone_set('Asia/Manila');
 
 $query = "SELECT * FROM posts ORDER BY upload_date DESC";
 $result = mysqli_query($conn, $query);

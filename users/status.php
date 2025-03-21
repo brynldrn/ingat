@@ -3,6 +3,9 @@ session_start();
 error_reporting(0);
 include('includes/config.php');
 
+
+date_default_timezone_set('Asia/Manila');
+
 if (strlen($_SESSION['login']) == 0) { 
     header('location:index.php');
     exit; 
