@@ -16,7 +16,7 @@ if ($result->num_rows > 0) {
 }
 
 $locationsJson = json_encode($locations);
-$googleApiKey = getenv('GOOGLE_MAPS_API_KEY');
+$googleApiKey = ('AIzaSyAgUzZvcyWFzeG2bY8qNctYWFgadxGah0M');
 ?>
 
 <!DOCTYPE html>
