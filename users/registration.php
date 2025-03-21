@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     $mail->Username   = 'ingat.system@gmail.com';
                     $mail->Password   = 'frqtctoqyfnuzivt'; 
                     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTSSL;
-                    $mail->Port       = 587;
+                    $mail->Port       = 465;
 
                     $mail->setFrom('ingat.system@gmail.com', 'Ingat System');
                     $mail->addAddress($email);
