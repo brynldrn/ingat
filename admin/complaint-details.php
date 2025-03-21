@@ -222,7 +222,7 @@ if ($complaint_details['complaint_file']) {
                 <?php } ?>
             </div>
         </div>
-    </div>
+    
 
 
 <!-- Update Complaint Modal -->
