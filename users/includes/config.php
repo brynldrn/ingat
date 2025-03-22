@@ -1,13 +1,5 @@
 <?php
-require '/vendor/autoload.php';
-
-// // Looing for .env at the root directory
-// $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-// $dotenv->load();
-
-// // Retrive env variable
-// $clientId = $_ENV['GOOGLE_CLIENT_ID'];
-// $clientSecret = $_ENV['GOOGLE_CLIENT_SECRET'];
+require_once 'vendor/autoload.php';
 
 // Google OAuth Configuration
 $client = new Google_Client();
