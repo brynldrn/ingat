@@ -330,28 +330,22 @@ foreach ($recent_complaints as $complaint) {
         </div>
         <div class="dropdown">
             <div id="header-profile" class="btn btn-outline-secondary d-flex align-items-center border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                <span class="me-2">
-                    <i class="ri-user-line text-dark"></i>
-                </span>
+                <img src="<?= htmlspecialchars($user_image) ?>" alt="Profile" width="25" height="25" class="rounded-circle me-2" onerror="this.src='../img/3.png';">
                 <div class="d-flex align-items-center">
-                    <span class="text-dark text-nowrap">
-                        <?= htmlentities($_SESSION['displayName']); ?>
-                    </span>
+                    <span class="text-dark text-nowrap"><?= htmlentities($_SESSION['displayName']); ?></span>
                     <i class="ri-arrow-drop-down-line text-dark fs-4"></i>
                 </div>
             </div>
             <ul class="dropdown-menu dropdown-menu-end" style="width: 14rem;">
                 <li>
                     <a class="dropdown-item" href="profile.php">
-                        <i class="ri-user-3-line"></i> 
-                        Profile
+                        <i class="ri-user-3-line"></i> Profile
                     </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
                     <a class="dropdown-item text-danger" href="logout.php">
-                        <i class="ri-logout-circle-r-line"></i>
-                        Logout
+                        <i class="ri-logout-circle-r-line"></i> Logout
                     </a>
                 </li>
             </ul>
@@ -489,26 +483,22 @@ foreach ($recent_complaints as $complaint) {
                 </div>
                 <div class="dropdown d-none d-lg-flex">
                     <div id="header-profile" class="btn btn-outline-secondary d-flex align-items-center border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <span class="me-2">
-                            <i class="ri-user-line text-dark"></i>
-                        </span>
+                        <img src="<?= htmlspecialchars($user_image) ?>" alt="Profile" width="25" height="25" class="rounded-circle me-2" onerror="this.src='../img/3.png';">
                         <div class="d-flex align-items-center">
-                            <span class="text-dark text-nowrap"> <?= htmlentities($_SESSION['displayName']); ?></span>
+                            <span class="text-dark text-nowrap"><?= htmlentities($_SESSION['displayName']); ?></span>
                             <i class="ri-arrow-drop-down-line text-dark fs-4"></i>
                         </div>
                     </div>
                     <ul class="dropdown-menu dropdown-menu-end" style="width: 14rem;">
                         <li>
                             <a class="dropdown-item" href="profile.php">
-                                <i class="ri-user-3-line"></i> 
-                                Profile
+                                <i class="ri-user-3-line"></i> Profile
                             </a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <a class="dropdown-item text-danger" href="logout.php">
-                                <i class="ri-logout-circle-r-line"></i>
-                                Logout
+                                <i class="ri-logout-circle-r-line"></i> Logout
                             </a>
                         </li>
                     </ul>
@@ -516,6 +506,7 @@ foreach ($recent_complaints as $complaint) {
             </div>
         </div>
     </div>
+</div>
 </div>
 
 <script>

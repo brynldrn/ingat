@@ -43,7 +43,7 @@ if (isset($_POST['submit'])) {
         $errormsg = "Invalid username or password.";
     }
 }
-
+$authUrl = $client->createAuthUrl();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -291,6 +291,47 @@ if (isset($_POST['submit'])) {
         max-width: 450px;
       }
     }
+    /* Existing styles unchanged, adding Google button styles */
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff; /* White background per Google branding */
+    border: 1px solid #dadce0; /* Light gray border */
+    border-radius: 0.25rem;
+    padding: 0.65rem 1rem; /* Slightly less padding than .btn-primary for icon */
+    font-size: 1rem;
+    font-family: 'Play', sans-serif;
+    color: #1a73e8; /* Google blue */
+    text-decoration: none;
+    width: 100%;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa; /* Light gray on hover */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+    color: #1557b0; /* Darker blue on hover */
+}
+
+.btn-google img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px; /* Space between icon and text */
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .btn-google {
+        padding: 0.55rem 1rem; /* Match .btn-primary */
+        font-size: 0.9rem;
+    }
+    .btn-google img {
+        width: 18px;
+        height: 18px; /* Slightly smaller icon */
+    }
+}
   </style>
 </head>
 <body>
@@ -304,32 +345,39 @@ if (isset($_POST['submit'])) {
         <h4 class="card-title">Sign In</h4>
         <p class="card-subtitle">Welcome back! Please sign in to continue.</p>
         <form method="post" class="mt-4">
-          <?php if($errormsg): ?>
+        <?php if($errormsg): ?>
             <div class="alert alert-danger">
-              <?= htmlentities($errormsg); ?>
+                <?= htmlentities($errormsg); ?>
             </div>
-          <?php endif; ?>
-          <div class="mb-3">
+        <?php endif; ?>
+        <div class="mb-3">
             <label for="email" class="form-label">Email Address</label>
             <input type="email" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="username" id="email" placeholder="Enter your email" required autofocus>
-          </div>
-          <div class="mb-3">
+        </div>
+        <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <div class="password-container">
-              <input type="password" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="password" id="password" placeholder="Enter your password" required>
-              <i class="fa fa-eye" id="togglePassword" style="cursor: pointer;"></i>
+                <input type="password" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="password" id="password" placeholder="Enter your password" required>
+                <i class="fa fa-eye" id="togglePassword" style="cursor: pointer;"></i>
             </div>
-          </div>
-          <div class="forgot-password">
+        </div>
+        <div class="forgot-password">
             <a href="forgot_password.php">Forgot password?</a>
-          </div>
-          <div class="d-grid mt-3">
+        </div>
+        <div class="d-grid mt-3">
             <button type="submit" class="btn btn-primary" name="submit">Sign In</button>
-          </div>
-          <div class="signup-link">
+        </div>
+        <div class="signup-link">
             Don't have an account? <a href="registration.php">Sign up</a>
-          </div>
-        </form>
+        </div>
+        <p class="text-center mt-3 mb-2">OR</p>
+        <div class="d-grid">
+            <a href="<?php echo htmlspecialchars($authUrl); ?>" class="btn-google">
+                <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo">
+                Sign In with Google
+            </a>
+        </div>
+    </form>
       </div>
     </div>
   </div>

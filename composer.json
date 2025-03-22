@@ -1,0 +1,6 @@
+{
+    "require": {
+        "google/auth": "^1.46",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
