@@ -9,6 +9,8 @@ require '../PHPMailer/src/SMTP.php';
 
 error_reporting(0); 
 
+session_start();
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Retrieve the form data
     $firstname    = $_POST['firstname'];
@@ -161,6 +163,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 }
+$authUrl = $client->createAuthUrl();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -443,6 +446,46 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         max-width: 450px;
       }
     }
+    
+.btn-google {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fff; /* White background per Google branding */
+    border: 1px solid #dadce0; /* Light gray border */
+    border-radius: 0.25rem;
+    padding: 0.65rem 1rem; /* Slightly less padding than .btn-primary for icon */
+    font-size: 1rem;
+    font-family: 'Play', sans-serif;
+    color: #1a73e8; /* Google blue */
+    text-decoration: none;
+    width: 100%;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.btn-google:hover {
+    background-color: #f8f9fa; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15); 
+    color: #1557b0; 
+}
+
+.btn-google img {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px; 
+}
+
+@media (max-width: 768px) {
+    .btn-google {
+        padding: 0.55rem 1rem; 
+        font-size: 0.9rem; 
+    }
+    .btn-google img {
+        width: 18px;
+        height: 18px;
+    }
+}
   </style>
 </head>
 <body>
@@ -513,6 +556,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
           </div>
           <div class="signup-link">
             Already have an account? <a href="index.php">Sign in</a>
+          </div>
+          <p class="text-center mt-3 mb-2">OR</p>
+          <div class="d-grid">
+              <a href="<?php echo htmlspecialchars($authUrl); ?>" class="btn-google">
+                  <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo">
+                  Sign Up with Google
+              </a>
           </div>
         </form>
       </div>
