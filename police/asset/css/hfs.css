@@ -1,0 +1,364 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    display: flex;
+    flex-direction: column;
+    background-color: #F3F3E0; /* Light background color */
+}
+/* Header Styling */
+.header {
+    position: fixed;
+    top: 0;
+    left: 285px; /* Adjust to match the width of the sidebar */
+    width: calc(100% - 285px); /* Ensure the header spans the remaining width */
+    height: 60px;
+    background-color: #03346E; /* Dark blue background */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 9999; /* Ensure the header is above the sidebar */
+    color: #F3F3E0; /* Light text color */
+}
+
+.header .logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start; /* Ensure the logo stays on the left */
+}
+
+.header .logo img {
+    height: 40px;
+    margin-right: 10px;
+    border-radius: 50%; /* Make the logo image circular */
+    object-fit: cover; /* Ensure the image covers the container */
+}
+
+.header .logo span {
+    font-size: 22px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #6EACDA; /* Accent color */
+}
+
+.header .settings {
+    display: flex;
+    align-items: center;
+    position: relative; /* To position the dropdown */
+}
+
+.header .settings a {
+    text-decoration: none;
+    color: #F3F3E0; /* Light text color */
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding-right: 10px;
+}
+
+.header .settings a:hover {
+    color: #6EACDA; /* Accent color on hover */
+}
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%; /* Align the dropdown below the settings icon */
+    background-color: #03346E; /* Dark blue background */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 8px;
+    min-width: 200px;
+    z-index: 10000;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.dropdown-menu.show {
+    display: block;
+    opacity: 1;
+    transform: translateY(0);
+    margin-left: -250px;
+}
+
+.dropdown-menu a {
+    text-decoration: none;
+    color: #F3F3E0; /* Light text color */
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, padding-left 0.3s ease;
+}
+
+.dropdown-menu a i {
+    margin-right: 10px;
+}
+
+.dropdown-menu a:hover {
+    background-color: #6EACDA; /* Accent color on hover */
+    padding-left: 20px; /* Adds some animation to the left padding */
+    color: #021526; /* Dark text color */
+}
+
+/* Adjust dropdown menu for mobile view */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        right: 10px; /* Adjust position for mobile view */
+        left: auto;
+        width: calc(100% - 20px); /* Ensure the dropdown spans the remaining width */
+        margin-left: 0; /* Remove left margin */
+    }
+}
+/* Header Adjustments for Mobile */
+@media (max-width: 768px) {
+    .header {
+        left: 0; /* Set to 0 to remove the left offset */
+        width: 100%; /* Make the header span the full width of the screen */
+        height: 50px; /* Reduce header height for mobile */
+        padding: 0 10px; /* Adjust padding */
+        justify-content: space-between; /* Keep spacing between logo and settings */
+    }
+
+    .header .logo img {
+        height: 30px; /* Adjust logo size for mobile */
+    }
+
+    .header .logo span {
+        font-size: 16px; /* Adjust text size */
+    }
+
+    .header .settings a {
+        font-size: 18px; /* Adjust font size for settings icon */
+    }
+
+    .dropdown-menu {
+        right: 10px; /* Adjust position for mobile view */
+        left: auto;
+        width: calc(100% - 20px); /* Ensure the dropdown spans the remaining width */
+        margin-left: 0; /* Remove left margin */
+    }
+}
+
+
+/* Header Adjustments for Mobile */
+@media (max-width: 768px) {
+    .header {
+        left: 0; /* Set to 0 to remove the left offset */
+        width: 100%; /* Make the header span the full width of the screen */
+        height: 50px; /* Reduce header height for mobile */
+        padding: 0 10px; /* Adjust padding */
+    }
+
+    .header .logo img {
+        height: 30px; /* Adjust logo size for mobile */
+    }
+
+    .header .logo span {
+        font-size: 16px; /* Adjust text size */
+    }
+
+    .header .settings a {
+        font-size: 18px; /* Adjust font size for settings icon */
+    }
+
+    .dropdown-menu {
+        right: 10px; /* Adjust position for mobile view */
+        left: auto;
+        width: calc(100% - 20px); /* Ensure the dropdown spans the remaining width */
+        margin-left: 0; /* Remove left margin */
+    }
+
+    .sidebar {
+        width: 80px; /* Adjust sidebar width for mobile */
+    }
+
+    .sidebar .profile .name,
+    .sidebar .profile .username {
+        display: none; /* Hide profile info */
+    }
+
+    .sidebar .nav-list a {
+        justify-content: center; /* Center the icons */
+    }
+
+    .sidebar .nav-list i {
+        font-size: 24px; /* Adjust icon size */
+    }
+
+    .sidebar .profile img {
+        height: 40px; /* Adjust profile image size */
+        margin-left: -5px;
+    }
+}
+
+/* Sidebar Styling */
+.sidebar {
+    height: 100vh;
+    width: 285px; /* Increased width */
+    background-color: #021526; /* Dark background */
+    position: fixed;
+    z-index: 0; 
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: 20px;
+    padding-left: 20px;
+    padding-right: 20px;
+    color: #F3F3E0; /* Light text color */
+    transition: all 0.3s ease;
+    overflow-y: auto; /* Enable vertical scrolling */
+}
+
+.sidebar .profile {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.sidebar .profile img {
+    width: 70px; /* Increased width */
+    height: 70px; /* Increased height */
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px; /* Increased margin */
+}
+
+.sidebar .profile .name {
+    font-size: 20px; /* Increased font size */
+    margin-bottom: 5px;
+}
+
+.sidebar .profile .username {
+    font-size: 16px; /* Increased font size */
+    color: #6EACDA; /* Accent color */
+}
+
+.sidebar .nav-list {
+    margin-top: 10%;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* Align items to the start */
+}
+
+.sidebar .nav-list a {
+    text-decoration: none;
+    color: #F3F3E0; /* Light text color */
+    margin: 10px 0;
+    display: flex;
+    align-items: center;
+    font-size: 18px;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar .nav-list a:hover {
+    background-color: #6EACDA; /* Accent color on hover */
+    color: #021526; /* Dark text color */
+}
+
+.sidebar .nav-list i {
+    margin-right: 15px;
+    font-size: 25px;
+}
+
+/* Footer Styling */
+.footer {
+    background-color: #021526; /* Dark background */
+    color: #F3F3E0; /* Light text color */
+    text-align: center;
+    padding: 20px 10px;
+    margin-top: 20px; /* Adds space before the footer */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0; /* Ensures the footer doesn't collapse */
+    width: 100%; /* Ensures it spans the entire width */
+    z-index: 9999;
+}
+
+.footer .footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer .footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer .footer-logo img {
+    width: 30px;
+    height: 30px;
+}
+
+.footer .footer-logo span {
+    font-size: 18px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #6EACDA; /* Accent color */
+}
+
+.footer .footer-links {
+    display: flex;
+    flex-wrap: wrap; /* Ensures links wrap on smaller screens */
+    justify-content: center;
+    gap: 8px;
+}
+
+.footer .footer-links a {
+    text-decoration: none;
+    color: #F3F3E0; /* Light text color */
+    font-size: 14px;
+    transition: color 0.3s ease;
+}
+
+.footer .footer-links a:hover {
+    color: #6EACDA; /* Accent color on hover */
+}
+
+.footer .footer-copy {
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .footer .footer-logo span {
+        font-size: 16px;
+    }
+
+    .footer .footer-links a {
+        font-size: 12px; /* Adjust font size for smaller screens */
+    }
+
+    .footer .footer-copy {
+        font-size: 10px; /* Smaller text for small devices */
+    }
+
+    .footer .footer-logo img {
+        width: 25px;
+        height: 25px; /* Adjust logo size for mobile */
+    }
+}
+
+/* Ensure full width for the sidebar on large screens */
+@media (min-width: 768px) {
+    .sidebar {
+        width: 285px; /* Standard sidebar width for larger screens */
+    }
+
+    .header {
+        left: 285px; /* Maintain offset for large screens */
+        width: calc(100% - 285px); /* Adjust header width accordingly */
+    }
+}
