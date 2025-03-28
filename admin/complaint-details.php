@@ -90,49 +90,16 @@ if ($complaint_details['complaint_file']) {
     <link rel="stylesheet" href="assets/css/table.dataTable-th.css">
     <script src="assets/js/config.js"></script>
     <style>
-        table {
-            border-collapse: collapse;
-            width: 100%;
-        }
-        table.dataTable tbody tr {
-            background-color: #fff;
-        }
-        .table-centered {
-            text-align: center;
-        }
-        @media (min-width: 1200px) {
-            .offset-xl-3 {
-                margin-left: 22%;
-                margin-top: 2%;
-            }
-        }
-        .anonymous-text {
-            font-style: italic;
-            color: #6c757d;
-        }
-        #map {
-            width: 400px;
-            height: 250px;
-        }
-        .file-content {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: flex-start;
-        }
-        .file-content img {
-            width: 400px;
-            height: 250px;
-            object-fit: cover;
-        }
-        .file-content video {
-            width: 400px;
-            height: 250px;
-        }
-        .file-content iframe {
-            width: 400px;
-            height: 250px;
-        }
+        table { border-collapse: collapse; width: 100%; }
+        table.dataTable tbody tr { background-color: #fff; }
+        .table-centered { text-align: center; }
+        @media (min-width: 1200px) { .offset-xl-3 { margin-left: 22%; margin-top: 2%; } }
+        .anonymous-text { font-style: italic; color: #6c757d; }
+        #map { width: 400px; height: 250px; }
+        .file-content { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-start; }
+        .file-content img { width: 400px; height: 250px; object-fit: cover; }
+        .file-content video { width: 400px; height: 250px; }
+        .file-content iframe { width: 400px; height: 250px; }
     </style>
 </head>
 <body>
@@ -165,17 +132,12 @@ if ($complaint_details['complaint_file']) {
                     </tr>
                     <tr>
                         <th>Date Filed</th>
-                        <td>
-                            <?php
-                            $date = new DateTime($complaint_details['registered_at']);
-                            echo $date->format('m/d/Y h:i A');
-                            ?>
-                        </td>
+                        <td><?php $date = new DateTime($complaint_details['registered_at']); echo $date->format('m/d/Y h:i A'); ?></td>
                         <th>Complaint Details</th>
                         <td><?= htmlspecialchars($complaint_details['complaint_details']); ?></td>
                     </tr>
                     <tr>
-                        <th>Weapon Involve</th>
+                        <th>Weapon Involved</th>
                         <td><?= htmlspecialchars($complaint_details['weapon_type'] ?? 'Not specified'); ?></td>
                         <th>Incident</th>
                         <td><?= htmlspecialchars($complaint_details['crime_type'] ?? 'Not specified'); ?></td>
@@ -220,45 +182,43 @@ if ($complaint_details['complaint_file']) {
                 <?php if ($complaint_details['status'] != "Solved") { ?>
                 <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#updateComplaintModal">Take Action</button>
                 <?php } ?>
+                <button type="button" class="btn btn-success mt-3" id="shareToMessengerBtn">Share to Messenger</button>
             </div>
         </div>
-    
 
-
-<!-- Update Complaint Modal -->
-<div class="modal fade" id="updateComplaintModal" tabindex="-1" aria-labelledby="updateComplaintModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <form action="updatecomplaint.php" method="post" id="updateComplaintForm">
-                <div class="modal-header text-center">
-                    <h5 class="modal-title" id="updateComplaintModalLabel">Update Complaint</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <!-- Update Complaint Modal -->
+        <div class="modal fade" id="updateComplaintModal" tabindex="-1" aria-labelledby="updateComplaintModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <form action="updatecomplaint.php" method="post" id="updateComplaintForm">
+                        <div class="modal-header text-center">
+                            <h5 class="modal-title" id="updateComplaintModalLabel">Update Complaint</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <input type="hidden" name="complaint_number" value="<?= htmlspecialchars($complaint_details['complaint_number']); ?>">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select name="status" id="status" class="form-control" required>
+                                    <option value="">Select Status</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Solved">Solved</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="remark" class="form-label">Remark</label>
+                                <textarea name="remark" id="remark" class="form-control" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
                 </div>
-                <div class="modal-body p-4">
-                    <input type="hidden" name="complaint_number" value="<?= htmlspecialchars($complaint_details['complaint_number']); ?>">
-                    <div class="mb-3">
-                        <label for="status" class="form-label">Status</label>
-                        <select name="status" id="status" class="form-control" required>
-                            <option value="">Select Status</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Solved">Solved</option>
-                        </select>
-                    </div>
-                    <div class="mb-3">
-                        <label for="remark" class="form-label">Remark</label>
-                        <textarea name="remark" id="remark" class="form-control" rows="3" required></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer d-flex justify-content-end">
-                    <button type="submit" class="btn btn-primary">Submit</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-                </div>
-                
+       
+        
+   
 
 <?php include('include/footer.php'); ?>
 
@@ -277,8 +237,6 @@ if ($complaint_details['complaint_file']) {
     function initMap() {
         const location = '<?= htmlspecialchars($complaint_details['location']); ?>';
         const geocoder = new google.maps.Geocoder();
-
-        // Corrected from getId to getElementById
         map = new google.maps.Map(document.getElementById('map'), {
             center: { lat: 14.59, lng: 121.02 }, // Default Metro Manila
             zoom: 8
@@ -289,31 +247,105 @@ if ($complaint_details['complaint_file']) {
                 const coords = results[0].geometry.location;
                 map.setCenter(coords);
                 map.setZoom(14);
-
                 marker = new google.maps.Marker({
                     position: coords,
                     map: map,
                     title: location
                 });
-
                 const infowindow = new google.maps.InfoWindow({
                     content: `<b>${location}</b>`
                 });
                 infowindow.open(map, marker);
             } else {
                 console.error('Geocode failed: ' + status);
-                // Optionally display a fallback message in the map div
                 document.getElementById('map').innerHTML = 'Map unavailable: Unable to geocode location';
             }
         });
     }
 
+    // Function to share to Messenger (web and mobile) with file links
+    function shareToMessenger(complaintNumber, crimeType, weapon, location, googleMapsLink, details, fileLinks) {
+        let shareText = `Complaint #: ${complaintNumber}\n` +
+                        `Crime Type: ${crimeType}\n` +
+                        `Weapon: ${weapon}\n` +
+                        `Location: ${location}\n` +
+                        `Google Maps: ${googleMapsLink}\n` +
+                        `Details: ${details}`;
+        
+        if (fileLinks.length > 0) {
+            shareText += `\nFiles:\n${fileLinks.join('\n')}`;
+        } else {
+            shareText += `\nFiles: None`;
+        }
+
+        const encodedText = encodeURIComponent(shareText);
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        const webMessengerUrl = `https://www.messenger.com/new?text=${encodedText}`;
+        const appMessengerUrl = `fb-messenger://share?text=${encodedText}`;
+
+        const shareWindow = window.open('', '_blank');
+        
+        if (isMobile) {
+            shareWindow.location = appMessengerUrl;
+            setTimeout(() => {
+                if (document.hidden) return;
+                shareWindow.location = webMessengerUrl;
+            }, 1000);
+        } else {
+            shareWindow.location = webMessengerUrl;
+        }
+
+        setTimeout(() => {
+            if (!shareWindow || shareWindow.closed) {
+                copyToClipboard(shareText);
+                alert('Could not open Messenger. Text copied to clipboard:\n\n' + shareText);
+            }
+        }, 2000);
+    }
+
+    // Helper function to copy text to clipboard
+    function copyToClipboard(text) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         initMap();
-        // Optional: Trigger resize to ensure map renders correctly
         setTimeout(function() {
             google.maps.event.trigger(map, 'resize');
         }, 100);
+
+        const shareToMessengerBtn = document.getElementById('shareToMessengerBtn');
+        shareToMessengerBtn.addEventListener('click', function() {
+            const complaintNumber = '<?= htmlspecialchars($complaint_details['complaint_number']); ?>';
+            const crimeType = '<?= htmlspecialchars($complaint_details['crime_type'] ?? 'Not specified'); ?>';
+            const weapon = '<?= htmlspecialchars($complaint_details['weapon_type'] ?? 'Not specified'); ?>';
+            const location = '<?= htmlspecialchars($complaint_details['location']); ?>';
+            const details = '<?= htmlspecialchars($complaint_details['complaint_details']); ?>';
+
+            // Generate file links
+            const fileLinks = [];
+            <?php foreach ($filePaths as $index => $file): ?>
+                fileLinks.push('<?= "http://" . $_SERVER['HTTP_HOST'] . "https://ingat-web-php-7q7ei.ondigitalocean.app/users/complaintdocs/" . htmlspecialchars(basename($file['path'])); ?>');
+            <?php endforeach; ?>
+
+            const geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ 'address': location }, function (results, status) {
+                let googleMapsLink;
+                if (status === google.maps.GeocoderStatus.OK && results[0]) {
+                    const coords = results[0].geometry.location;
+                    googleMapsLink = `https://www.google.com/maps?q=${coords.lat()},${coords.lng()}`;
+                } else {
+                    googleMapsLink = `https://www.google.com/maps?q=${encodeURIComponent(location)}`;
+                }
+                shareToMessenger(complaintNumber, crimeType, weapon, location, googleMapsLink, details, fileLinks);
+            });
+        });
     });
 </script>
 </body>

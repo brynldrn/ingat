@@ -92,49 +92,55 @@
             <?php } ?>
         </ul>
     </div>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="manage-users.php">
-        <span class="nav-icon">
-            <iconify-icon icon="bi:people-fill"></iconify-icon>
-        </span>
-        <span class="nav-text">Users</span>
-        <span class="badge bg-primary badge-pill text-end"></span>
-    </a>
-</li>
+    </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="manage-users.php">
+                                <span class="nav-icon">
+                                    <iconify-icon icon="bi:people-fill"></iconify-icon>
+                                </span>
+                                <span class="nav-text">Users</span>
+                                <span class="badge bg-primary badge-pill text-end"></span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="police.php">
+                                <span class="nav-icon">
+                                    <iconify-icon icon="mdi:police-badge"></iconify-icon>
+                                </span>
+                                <span class="nav-text">Officers</span>
+                                <span class="badge bg-primary badge-pill text-end"></span>
+                            </a>
+                        </li>
 
-                       <li class="menu-title">Other</li>
-                       <li class="nav-item">
-                       <li class="nav-item">
-    <a class="nav-link" href="updates.php">
-        <span class="nav-icon">
-            <iconify-icon icon="bi:bell-fill"></iconify-icon>
-        </span>
-        <span class="nav-text">Create/Manage Updates</span>
-        <span class="badge bg-primary badge-pill text-end"></span>
-    </a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="category.php">
-        <span class="nav-icon">
-            <iconify-icon icon="bi:card-text"></iconify-icon>
-        </span>
-        <span class="nav-text">Manage Category</span>
-        <span class="badge bg-primary badge-pill text-end"></span>
-    </a>
-</li>
-<li class="nav-item">
-    <a class="nav-link" href="weapons.php">
-        <span class="nav-icon">
-            <iconify-icon icon="bi:shield-lock"></iconify-icon>
-        </span>
-        <span class="nav-text">Types of Weapon</span>
-        <span class="badge bg-primary badge-pill text-end"></span>
-    </a>
-</li>
-
-
-
+                        <li class="menu-title">Other</li>
+                        <li class="nav-item">
+                        <li class="nav-item">
+                    <a class="nav-link" href="updates.php">
+                        <span class="nav-icon">
+                            <iconify-icon icon="bi:bell-fill"></iconify-icon>
+                        </span>
+                        <span class="nav-text">Create/Manage Updates</span>
+                        <span class="badge bg-primary badge-pill text-end"></span>
+                    </a>
+                </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="category.php">
+                            <span class="nav-icon">
+                                <iconify-icon icon="bi:card-text"></iconify-icon>
+                            </span>
+                            <span class="nav-text">Manage Category</span>
+                            <span class="badge bg-primary badge-pill text-end"></span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="weapons.php">
+                            <span class="nav-icon">
+                                <iconify-icon icon="bi:shield-lock"></iconify-icon>
+                            </span>
+                            <span class="nav-text">Types of Weapon</span>
+                            <span class="badge bg-primary badge-pill text-end"></span>
+                        </a>
+                    </li>
                   </ul>
              </div>
         </div>

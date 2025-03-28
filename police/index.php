@@ -4,43 +4,44 @@ error_reporting(0);
 include("includes/config.php");
 
 if (isset($_POST['submit'])) {
-    $email = $_POST['username'];
+    $badge_number = $_POST['badge_number'];
     $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT id, firstname, middlename, lastname, password FROM users WHERE user_email = ?");
-    $stmt->bind_param("s", $email);
+    $stmt = $conn->prepare("SELECT id, badge_number, firstname, middlename, lastname, password FROM police WHERE badge_number = ?");
+    $stmt->bind_param("s", $badge_number);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
+        $police = $result->fetch_assoc();
 
-        if (password_verify($password, $user['password'])) {
-            $_SESSION['userId'] = $user['id'];
-            $_SESSION['firstname'] = $user['firstname'];
-            $_SESSION['middlename'] = $user['middlename'];
-            $_SESSION['lastname'] = $user['lastname'];
-            $_SESSION['login'] = $email;
-            $_SESSION['id'] = $user['id'];
+        if (password_verify($password, $police['password'])) {
+            $_SESSION['policeId'] = $police['id'];
+            $_SESSION['badge_number'] = $police['badge_number'];
+            $_SESSION['firstname'] = $police['firstname'];
+            $_SESSION['middlename'] = $police['middlename'];
+            $_SESSION['lastname'] = $police['lastname'];
+            $_SESSION['login'] = $badge_number;
+            $_SESSION['id'] = $police['id'];
 
-            $_SESSION['displayName'] = $user['firstname'] 
-                . (empty($user['middlename']) ? '' : ' ' . $user['middlename']) 
-                . ' ' . $user['lastname'];
+            $_SESSION['displayName'] = $police['firstname'] 
+                . (empty($police['middlename']) ? '' : ' ' . $police['middlename']) 
+                . ' ' . $police['lastname'];
 
             $uip = $_SERVER['REMOTE_ADDR'];
-            $status = 1; 
+            $status = 1;
             $log_stmt = $conn->prepare("INSERT INTO userlog (uid, username, userip, status) VALUES (?, ?, INET_ATON(?), ?)");
             $log_stmt->bind_param("issi", $_SESSION['id'], $_SESSION['login'], $uip, $status);
             $log_stmt->execute();
 
             session_regenerate_id(true);
-            header("Location: dashboard.php");
+            header("Location: police-dashboard.php");
             exit();
         } else {
-            $errormsg = "Invalid username or password.";
+            $errormsg = "Invalid badge number or password.";
         }
     } else {
-        $errormsg = "Invalid username or password.";
+        $errormsg = "Invalid badge number or password.";
     }
 }
 ?>
@@ -48,7 +49,7 @@ if (isset($_POST['submit'])) {
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Sign In - INGAT</title>
+  <title>Police Sign In - INGAT</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="robots" content="index, follow" />
@@ -84,23 +85,38 @@ if (isset($_POST['submit'])) {
     }
     .left-section {
       flex: 1;
-      background: linear-gradient(135deg, #4a90e2, #63b8ff);
+      background: url('../img/pnp.jpeg') center/cover no-repeat;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       color: #fff;
       padding: 2rem;
-      margin-left:-10%;
+      margin-left: -10%;
+      position: relative;
+    }
+    .left-section::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5); /* Blackish overlay */
+      z-index: 1;
     }
     .left-section img {
       max-width: 150px;
       margin-bottom: 1rem;
+      position: relative;
+      z-index: 2; /* Above overlay */
     }
     .left-section p {
       text-align: center;
       font-size: 1.1rem;
       margin: 0;
+      position: relative;
+      z-index: 2; /* Above overlay */
     }
     .right-section {
       flex: 1;
@@ -181,16 +197,6 @@ if (isset($_POST['submit'])) {
       text-decoration: none;
       font-size: 0.875rem;
     }
-    .signup-link {
-      text-align: center;
-      margin-top: 1rem;
-      color: #6c757d;
-    }
-    .signup-link a {
-      color: #4a90e2;
-      text-decoration: none;
-      font-weight: 700;
-    }
     .alert-danger {
       background-color: #f8d7da;
       color: #721c24;
@@ -198,6 +204,76 @@ if (isset($_POST['submit'])) {
       padding: 0.75rem;
       margin-bottom: 1rem;
       border-radius: 0.25rem;
+    }
+    .d-grid {
+      display: grid;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .login-container {
+        flex-direction: column;
+        height: auto;
+        padding: 1rem;
+      }
+      .left-section {
+        flex: none;
+        width: 100%;
+        padding: 1rem;
+        margin-left: 0;
+        min-height: 200px;
+      }
+      .left-section img {
+        max-width: 120px;
+      }
+      .left-section p {
+        font-size: 0.9rem;
+      }
+      .right-section {
+        flex: none;
+        width: 100%;
+        padding: 1rem;
+      }
+      .card {
+        max-width: 100%;
+        padding: 1.5rem;
+      }
+      .card-title {
+        font-size: 1.25rem;
+      }
+      .card-subtitle {
+        font-size: 0.85rem;
+      }
+      .form-label {
+        font-size: 0.85rem;
+      }
+      .form-control {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+      }
+      .btn-primary {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+      }
+      .alert-danger {
+        font-size: 0.9rem;
+        padding: 0.6rem;
+      }
+      .forgot-password a {
+        font-size: 0.8rem;
+      }
+    }
+
+    @media (min-width: 769px) and (max-width: 991px) {
+      .login-container {
+        max-width: 800px;
+      }
+      .left-section, .right-section {
+        padding: 1.5rem;
+      }
+      .card {
+        max-width: 350px;
+      }
     }
   </style>
 </head>
@@ -209,8 +285,8 @@ if (isset($_POST['submit'])) {
     </div>
     <div class="right-section">
       <div class="card">
-        <h4 class="card-title">Sign In</h4>
-        <p class="card-subtitle">Welcome back! Please sign in to continue.</p>
+        <h4 class="card-title">Police Sign In</h4>
+        <p class="card-subtitle">Welcome back, officer! Please sign in to continue.</p>
         <form method="post" class="mt-4">
           <?php if($errormsg): ?>
             <div class="alert alert-danger">
@@ -218,24 +294,18 @@ if (isset($_POST['submit'])) {
             </div>
           <?php endif; ?>
           <div class="mb-3">
-            <label for="email" class="form-label">Email Address</label>
-            <input type="email" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="username" id="email" placeholder="Enter your email" required autofocus>
+            <label for="badge_number" class="form-label">Badge Number</label>
+            <input type="text" class="form-control" name="badge_number" id="badge_number" placeholder="Enter your badge number" required autofocus>
           </div>
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <div class="password-container">
-              <input type="password" style="background-color:white; color:rgb(0, 0, 0);" class="form-control" name="password" id="password" placeholder="Enter your password" required>
+              <input type="password" class="form-control" name="password" id="password" placeholder="Enter your password" required>
               <i class="fa fa-eye" id="togglePassword" style="cursor: pointer;"></i>
             </div>
           </div>
-          <div class="forgot-password">
-            <a href="forgot_password.php">Forgot password?</a>
-          </div>
           <div class="d-grid mt-3">
             <button type="submit" class="btn btn-primary" name="submit">Sign In</button>
-          </div>
-          <div class="signup-link">
-            Don't have an account? <a href="registration.php">Sign up</a>
           </div>
         </form>
       </div>
