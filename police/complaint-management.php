@@ -65,6 +65,12 @@ $result = $stmt->get_result();
             color: #6c757d;
             font-style: italic;
         }
+        .complaint-card {
+            display: none; /* Hidden by default, shown by JS if matches search */
+        }
+        .complaint-card.visible {
+            display: block; /* Shown when matches search */
+        }
     </style>
 </head>
 <body>
@@ -82,65 +88,96 @@ $result = $stmt->get_result();
                             <span class="input-group-text border-end-0" id="basic-addon1">
                                 <i class="fas fa-search"></i>
                             </span>
-                            <input type="text" class="form-control border-start-0" placeholder="Search reports..." aria-label="Search" aria-describedby="basic-addon1">
+                            <input type="text" class="form-control border-start-0" id="searchInput" placeholder="Search reports..." aria-label="Search" aria-describedby="basic-addon1">
                         </div>
                     </div>
                 </div>
 
-                <?php
-                if ($result->num_rows > 0) {
-                    while ($row = $result->fetch_assoc()) {
-                        // Fixed ternary operator with proper parentheses
-                        $complainant_name = $row['anonymous'] == 1 
-                            ? '<span class="anonymous-text">Anonymous</span>' 
-                            : (trim(($row['firstname'] ?? '') . ' ' . 
-                                    (!empty($row['middlename']) ? $row['middlename'] . ' ' : '') . 
-                                    ($row['lastname'] ?? '')) ?: 'Unknown User');
+                <div id="complaintList">
+                    <?php
+                    if ($result->num_rows > 0) {
+                        while ($row = $result->fetch_assoc()) {
+                            $complainant_name = $row['anonymous'] == 1 
+                                ? '<span class="anonymous-text">Anonymous</span>' 
+                                : (trim(($row['firstname'] ?? '') . ' ' . 
+                                        (!empty($row['middlename']) ? $row['middlename'] . ' ' : '') . 
+                                        ($row['lastname'] ?? '')) ?: 'Unknown User');
 
-                        $badge_class = "";
-                        switch ($row['status']) {
-                            case "Pending":
-                                $badge_class = "text-bg-warning";
-                                break;
-                            case "In Progress":
-                                $badge_class = "text-bg-primary";
-                                break;
-                            case "Solved":
-                                $badge_class = "text-bg-success";
-                                break;
-                            default:
-                                $badge_class = "text-bg-secondary";
+                            $badge_class = "";
+                            switch ($row['status']) {
+                                case "Pending":
+                                    $badge_class = "text-bg-warning";
+                                    break;
+                                case "In Progress":
+                                    $badge_class = "text-bg-primary";
+                                    break;
+                                case "Solved":
+                                    $badge_class = "text-bg-success";
+                                    break;
+                                default:
+                                    $badge_class = "text-bg-secondary";
+                            }
+                            ?>
+                            <div class="bg-white p-4 shadow-sm border rounded-2 complaint-card" 
+                                 data-search="<?php echo htmlspecialchars(strtolower($row['complaint_number'] . ' ' . ($row['crime_type'] ?? '') . ' ' . $row['location'] . ' ' . $row['complaint_details'] . ' ' . strip_tags($complainant_name))); ?>">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h5 class="m-0 fw-bold"><?php echo htmlspecialchars($row['crime_type'] ?? 'Unknown Crime Type'); ?></h5>
+                                        <small><?php echo htmlspecialchars($row['complaint_number']) . " • " . htmlspecialchars($row['location']); ?></small>
+                                    </div>
+                                    <div>
+                                        <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($row['status'] ?? 'Not Assigned'); ?></span>
+                                    </div>
+                                </div>
+                                <div class="my-3">
+                                    <small class="fw-bold m-0 d-block"><?php echo htmlspecialchars($row['complaint_details']); ?></small>
+                                    <small>Reported on: <?php echo htmlspecialchars($row['registered_at']); ?></small>
+                                    <small class="d-block">Complainant: <?php echo $complainant_name; ?></small>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-end column-gap-2">
+                                    <a href="view-details.php?cid=<?php echo urlencode($row['complaint_number']); ?>" class="btn btn-outline-dark text-nowrap">View Details</a>
+                                    <a href="take-action.php?cid=<?php echo urlencode($row['complaint_number']); ?>" class="btn btn-dark text-nowrap">Take Action</a>
+                                </div>
+                            </div>
+                            <?php
                         }
-                        ?>
-                        <div class="bg-white p-4 shadow-sm border rounded-2">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div>
-                                    <h5 class="m-0 fw-bold"><?php echo htmlspecialchars($row['crime_type'] ?? 'Unknown Crime Type'); ?></h5>
-                                    <small><?php echo htmlspecialchars($row['complaint_number']) . " • " . htmlspecialchars($row['location']); ?></small>
-                                </div>
-                                <div>
-                                    <span class="badge <?php echo $badge_class; ?>"><?php echo htmlspecialchars($row['status'] ?? 'Not Assigned'); ?></span>
-                                </div>
-                            </div>
-                            <div class="my-3">
-                                <small class="fw-bold m-0 d-block"><?php echo htmlspecialchars($row['complaint_details']); ?></small>
-                                <small>Reported on: <?php echo htmlspecialchars($row['registered_at']); ?></small>
-                                <small class="d-block">Complainant: <?php echo $complainant_name; ?></small>
-                            </div>
-							<div class="d-flex align-items-center justify-content-end column-gap-2">
-							<a href="view-details.php?cid=<?php echo urlencode($row['complaint_number']); ?>" class="btn btn-outline-dark text-nowrap">View Details</a>
-								<a href="take-action.php?cid=<?php echo urlencode($row['complaint_number']); ?>" class="btn btn-dark text-nowrap">Take Action</a>
-							</div>
-                        </div>
-                        <?php
+                    } else {
+                        echo "<p class='text-center' id='noResults'>No complaints found.</p>";
                     }
-                } else {
-                    echo "<p class='text-center'>No complaints found.</p>";
-                }
-                ?>
+                    ?>
+                </div>
             </div>
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('searchInput');
+            const complaintCards = document.querySelectorAll('.complaint-card');
+            const noResults = document.getElementById('noResults');
+
+            // Show all cards initially
+            complaintCards.forEach(card => card.classList.add('visible'));
+
+            searchInput.addEventListener('input', function () {
+                const searchTerm = searchInput.value.trim().toLowerCase();
+                let hasVisible = false;
+
+                complaintCards.forEach(card => {
+                    const searchData = card.getAttribute('data-search');
+                    if (searchData.includes(searchTerm)) {
+                        card.classList.add('visible');
+                        hasVisible = true;
+                    } else {
+                        card.classList.remove('visible');
+                    }
+                });
+
+                if (noResults) {
+                    noResults.style.display = hasVisible ? 'none' : 'block';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
