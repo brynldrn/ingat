@@ -16,7 +16,7 @@ if (isset($_POST['submit'])) {
         $police = $result->fetch_assoc();
 
         if (password_verify($password, $police['password'])) {
-            $_SESSION['policeId'] = $police['id'];
+            $_SESSION['police_id'] = $police['id'];
             $_SESSION['badge_number'] = $police['badge_number'];
             $_SESSION['firstname'] = $police['firstname'];
             $_SESSION['middlename'] = $police['middlename'];
@@ -35,7 +35,8 @@ if (isset($_POST['submit'])) {
             $log_stmt->execute();
 
             session_regenerate_id(true);
-            header("Location: police-dashboard.php");
+            header("Location: complaint-management.php");
+            
             exit();
         } else {
             $errormsg = "Invalid badge number or password.";
