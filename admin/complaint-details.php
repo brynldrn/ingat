@@ -15,19 +15,24 @@ if (!$cid || !preg_match('/^CMP-\d{10,15}-\d{3,4}$/', $cid)) {
     exit();
 }
 
+// Fetch complaint details including current police assignment
 try {
     $stmt = $conn->prepare("
         SELECT 
             tblcomplaints.*, 
-            users.firstname, 
+            users.firstname AS user_firstname, 
             users.middlename, 
-            users.lastname, 
+            users.lastname AS user_lastname, 
             weapons.weapon_type, 
-            crime_types.crime_type 
+            crime_types.crime_type,
+            police.firstname AS police_firstname,
+            police.lastname AS police_lastname,
+            police.badge_number
         FROM tblcomplaints 
         LEFT JOIN users ON users.id = tblcomplaints.userId 
         LEFT JOIN weapons ON weapons.id = tblcomplaints.weapon_id
         LEFT JOIN crime_types ON crime_types.id = tblcomplaints.crime_type_id
+        LEFT JOIN police ON police.id = tblcomplaints.police_id
         WHERE tblcomplaints.complaint_number = ?
     ");
     $stmt->bind_param("s", $cid);
@@ -41,13 +46,14 @@ try {
     $complaint_details = $result->fetch_assoc();
     $complaint_details['name'] = $complaint_details['anonymous'] == 1 
         ? '<span class="anonymous-text">Anonymous</span>' 
-        : (trim(($complaint_details['firstname'] ?? '') . ' ' . 
+        : (trim(($complaint_details['user_firstname'] ?? '') . ' ' . 
                (!empty($complaint_details['middlename']) ? $complaint_details['middlename'] . ' ' : '') . 
-               ($complaint_details['lastname'] ?? '')) ?: 'Unknown User');
+               ($complaint_details['user_lastname'] ?? '')) ?: 'Unknown User');
 } catch (Exception $e) {
     die("<p>Error fetching complaint details: " . htmlspecialchars($e->getMessage()) . "</p>");
 }
 
+// Fetch remarks
 try {
     $stmt = $conn->prepare("SELECT remark, status, remark_date FROM complaintremark WHERE complaint_number = ? ORDER BY remark_date DESC");
     $stmt->bind_param("s", $cid);
@@ -57,6 +63,20 @@ try {
     die("<p>Error fetching remarks: " . htmlspecialchars($e->getMessage()) . "</p>");
 }
 
+// Fetch available police officers
+try {
+    $police_stmt = $conn->prepare("SELECT id, firstname, lastname, badge_number FROM police ORDER BY lastname, firstname");
+    $police_stmt->execute();
+    $police_result = $police_stmt->get_result();
+    $police_officers = [];
+    while ($row = $police_result->fetch_assoc()) {
+        $police_officers[] = $row;
+    }
+} catch (Exception $e) {
+    die("<p>Error fetching police officers: " . htmlspecialchars($e->getMessage()) . "</p>");
+}
+
+// Complainant files
 $uploadBasePath = __DIR__ . '/../users/complaintdocs/';
 $filePaths = [];
 if ($complaint_details['complaint_file']) {
@@ -74,7 +94,7 @@ if ($complaint_details['complaint_file']) {
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Complaint Details</title>
+    <title>Complaint Details - <?= htmlspecialchars($cid); ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="robots" content="index, follow" />
@@ -117,9 +137,15 @@ if ($complaint_details['complaint_file']) {
             </ol>
         </div>
        
+        <?php if (isset($_GET['msg'])): ?>
+            <div class="alert alert-<?php echo strpos($_GET['msg'], 'Error') === 0 ? 'danger' : 'success'; ?> mt-3">
+                <?= htmlspecialchars($_GET['msg']); ?>
+            </div>
+        <?php endif; ?>
+
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">Complaint Information</h4>
+                <h4 class="card-title mb-0">Complaint Information - <?= htmlspecialchars($cid); ?></h4>
             </div>
 
             <div class="card-body">
@@ -145,7 +171,8 @@ if ($complaint_details['complaint_file']) {
                     <tr>
                         <th>Status</th>
                         <td><?= htmlspecialchars($complaint_details['status'] ?? "New"); ?></td>
-                        <td colspan="2"></td>
+                        <th>Assigned Officer</th>
+                        <td><?php echo $complaint_details['police_id'] ? htmlspecialchars($complaint_details['police_firstname'] . ' ' . $complaint_details['police_lastname'] . ' (Badge: ' . ($complaint_details['badge_number'] ?? 'N/A') . ')') : 'Not Assigned'; ?></td>
                     </tr>
                     <tr>
                         <th>Location</th>
@@ -179,9 +206,9 @@ if ($complaint_details['complaint_file']) {
                     </tr>
                 </table>
 
-                <?php if ($complaint_details['status'] != "Solved") { ?>
-                <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#updateComplaintModal">Take Action</button>
-                <?php } ?>
+                <?php if ($complaint_details['status'] != "Solved"): ?>
+                    <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#updateComplaintModal">Update Complaint</button>
+                <?php endif; ?>
                 <button type="button" class="btn btn-success mt-3" id="shareToMessengerBtn">Share to Messenger</button>
             </div>
         </div>
@@ -197,6 +224,17 @@ if ($complaint_details['complaint_file']) {
                         </div>
                         <div class="modal-body p-4">
                             <input type="hidden" name="complaint_number" value="<?= htmlspecialchars($complaint_details['complaint_number']); ?>">
+                            <div class="mb-3">
+                                <label for="police_id" class="form-label">Assign Police Officer</label>
+                                <select name="police_id" id="police_id" class="form-control">
+                                    <option value="">Select Officer (Leave blank to keep current)</option>
+                                    <?php foreach ($police_officers as $officer): ?>
+                                        <option value="<?= $officer['id']; ?>" <?php echo $complaint_details['police_id'] == $officer['id'] ? 'selected' : ''; ?>>
+                                            <?= htmlspecialchars($officer['firstname'] . ' ' . $officer['lastname'] . ' (Badge: ' . ($officer['badge_number'] ?? 'N/A') . ')'); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                             <div class="mb-3">
                                 <label for="status" class="form-label">Status</label>
                                 <select name="status" id="status" class="form-control" required>
@@ -216,9 +254,9 @@ if ($complaint_details['complaint_file']) {
                         </div>
                     </form>
                 </div>
-       
-        
-   
+            </div>
+     
+  
 
 <?php include('include/footer.php'); ?>
 
@@ -263,7 +301,6 @@ if ($complaint_details['complaint_file']) {
         });
     }
 
-    // Function to share to Messenger (web and mobile) with file links
     function shareToMessenger(complaintNumber, crimeType, weapon, location, googleMapsLink, details, fileLinks) {
         let shareText = `Complaint #: ${complaintNumber}\n` +
                         `Crime Type: ${crimeType}\n` +
@@ -280,7 +317,6 @@ if ($complaint_details['complaint_file']) {
 
         const encodedText = encodeURIComponent(shareText);
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-        
         const webMessengerUrl = `https://www.messenger.com/new?text=${encodedText}`;
         const appMessengerUrl = `fb-messenger://share?text=${encodedText}`;
 
@@ -304,7 +340,6 @@ if ($complaint_details['complaint_file']) {
         }, 2000);
     }
 
-    // Helper function to copy text to clipboard
     function copyToClipboard(text) {
         const textarea = document.createElement('textarea');
         textarea.value = text;
@@ -328,10 +363,9 @@ if ($complaint_details['complaint_file']) {
             const location = '<?= htmlspecialchars($complaint_details['location']); ?>';
             const details = '<?= htmlspecialchars($complaint_details['complaint_details']); ?>';
 
-            // Generate file links
             const fileLinks = [];
             <?php foreach ($filePaths as $index => $file): ?>
-                fileLinks.push('<?= "http://" . $_SERVER['HTTP_HOST'] . "https://ingat-web-php-7q7ei.ondigitalocean.app/users/complaintdocs/" . htmlspecialchars(basename($file['path'])); ?>');
+                fileLinks.push('<?= "http://" . $_SERVER['HTTP_HOST'] . "/users/complaintdocs/" . htmlspecialchars(basename($file['path'])); ?>');
             <?php endforeach; ?>
 
             const geocoder = new google.maps.Geocoder();
