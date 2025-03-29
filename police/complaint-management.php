@@ -1,6 +1,6 @@
 <?php
 session_start();
-include "includes/config.php"; // Database connection
+include "includes/config.php";
 
 if (!isset($_SESSION['police_id'])) {
     header("Location: index.php");
@@ -8,7 +8,6 @@ if (!isset($_SESSION['police_id'])) {
 }
 
 $police_id = $_SESSION['police_id'];
-// Join tblcomplaints with crime_types and users
 $query = "SELECT tc.*, ct.crime_type, u.firstname, u.middlename, u.lastname 
           FROM tblcomplaints tc 
           LEFT JOIN crime_types ct ON tc.crime_type_id = ct.id 
@@ -28,9 +27,10 @@ $result = $stmt->get_result();
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Complaint Management - INGAT</title>
+    <link rel="shortcut icon" href="asset/images/ingat.ico">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
@@ -66,10 +66,10 @@ $result = $stmt->get_result();
             font-style: italic;
         }
         .complaint-card {
-            display: none; /* Hidden by default, shown by JS if matches search */
+            display: none; 
         }
         .complaint-card.visible {
-            display: block; /* Shown when matches search */
+            display: block; 
         }
     </style>
 </head>

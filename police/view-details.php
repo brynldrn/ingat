@@ -67,6 +67,9 @@ if ($complaint['complaint_file']) {
 ?>
 
 <?php include "plugins-header.php"; ?>
+<!DOCTYPE html>
+<html lang="en">
+<link rel="shortcut icon" href="asset/images/ingat.ico">
 <body>
 	<?php include "includes/header.php"; ?>
     <div class="container px-1 py-4">

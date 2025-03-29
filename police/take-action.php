@@ -137,7 +137,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         font-size: 0.9em;
     }
 </style>
-
+<!DOCTYPE html>
+<html lang="en">
+<link rel="shortcut icon" href="asset/images/ingat.ico">
 <body>
 	<?php include "includes/header.php"; ?>
     <div class="container px-1 py-4">
