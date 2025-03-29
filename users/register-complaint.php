@@ -130,7 +130,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             exit();
         }
     }
-
+    $weapon_id = NULL;
+    $custom_weapon = !empty($_POST['custom_weapon']) ? mysqli_real_escape_string($conn, $_POST['custom_weapon']) : NULL;
+    
+    // Handle weapon selection
+    if (!empty($_POST['weapon'])) {
+        if ($_POST['weapon'] === 'other' && !empty($custom_weapon)) {
+            // Insert new weapon type into database
+            $stmt = $conn->prepare("INSERT INTO weapons (weapon_type) VALUES (?)");
+            $stmt->bind_param('s', $custom_weapon);
+            if ($stmt->execute()) {
+                $weapon_id = $stmt->insert_id;
+            } else {
+                echo '<script>alert("Failed to save custom weapon type. Please try again."); window.history.back();</script>';
+                exit();
+            }
+        } else {
+            $weapon_id = intval($_POST['weapon']);
+        }
+    }
+    
     $complaint_number = 'CMP-' . time() . '-' . rand(1000, 9999);
     $complaint_file = implode(',', $complaint_files);
 
@@ -193,14 +212,27 @@ label[for="weapon"] {
                                 <label for="crime_type">Incidents</label>
                             </div>
                             <div class="col-12 col-md-6 form-floating position-relative">
-                                <select name="weapon" id="weapon" class="form-control rounded-1" required>
-                                    <option value="">Select Weapon Involve</option>
-                                    <?php foreach ($weapons as $weapon): ?>
-                                        <option value="<?php echo $weapon['id']; ?>"><?php echo htmlspecialchars($weapon['weapon_type']); ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                                <label for="weapon">Weapon Involve</label>
-                            </div>
+                    <select name="weapon" id="weapon" class="form-control rounded-1">
+                        <option value="">Select Weapon (if any)</option>
+                        <?php foreach ($weapons as $weapon): ?>
+                            <option value="<?php echo $weapon['id']; ?>"><?php echo htmlspecialchars($weapon['weapon_type']); ?></option>
+                        <?php endforeach; ?>
+                        <option value="other">Other (specify below)</option>
+                    </select>
+                    <label for="weapon">Weapon Used</label>
+                    <div id="customWeaponContainer" style="display: none; margin-top: 10px;">
+                        <input type="text" name="custom_weapon" id="custom_weapon" class="form-control rounded-1" placeholder="Enter custom weapon type">
+                 </div>
+                <script>document.getElementById('weapon').addEventListener('change', function() {
+                    const weaponSelect = this;
+                    const customWeaponContainer = document.getElementById('customWeaponContainer');
+                    
+                    if (weaponSelect.value === 'other') {
+                        customWeaponContainer.style.display = 'block';
+                    } else {
+                        customWeaponContainer.style.display = 'none';
+                    }
+                });</script>
                         </div>
                         <div class="form-floating w-100">
                             <textarea required type="text" name="description" id="description" class="form-control rounded-1" placeholder="input description" style="height: 150px;"></textarea>
