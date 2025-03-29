@@ -13,23 +13,23 @@ if (isset($_GET['id'])) {
         <form method="post">
             <input type="hidden" name="id" value="<?= $id ?>">
             <div class="form-group">
-                <label>Badge Number</label>
+                <label style="color:black">Badge Number</label>
                 <input type="text" class="form-control" name="badge_number" value="<?= htmlentities($row['badge_number']) ?>" required>
             </div>
             <div class="form-group">
-                <label>First Name</label>
+                <label style="color:black">First Name</label>
                 <input type="text" class="form-control" name="firstname" value="<?= htmlentities($row['firstname']) ?>" required>
             </div>
             <div class="form-group">
-                <label>Middle Name (Optional)</label>
+                <label style="color:black">Middle Name (Optional)</label>
                 <input type="text" class="form-control" name="middlename" value="<?= htmlentities($row['middlename']) ?>">
             </div>
             <div class="form-group">
-                <label>Last Name</label>
+                <label style="color:black">Last Name</label>
                 <input type="text" class="form-control" name="lastname" value="<?= htmlentities($row['lastname']) ?>" required>
             </div>
             <div class="form-group">
-                <label>Password (Leave blank to keep unchanged)</label>
+                <label style="color:black">Password (Leave blank to keep unchanged)</label>
                 <div class="password-container">
                     <input type="password" class="form-control" name="password" id="edit_password">
                     <i class="fa fa-eye" id="edit_togglePassword"></i>
@@ -37,7 +37,7 @@ if (isset($_GET['id'])) {
             </div>
             <div class="form-group">
                 <input type="checkbox" name="status" id="edit_status" <?= $row['status'] ? 'checked' : '' ?>>
-                <label for="edit_status">Active</label>
+                <label for="edit_status" style="color:black">Active</label>
             </div>
             <button type="submit" class="btn btn-primary" name="update">Update Details</button>
         </form>
