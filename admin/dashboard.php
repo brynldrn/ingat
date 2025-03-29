@@ -432,7 +432,7 @@ $conn->close();
                     <option value="9">September</option>
                     <option value="10">October</option>
                     <option value="11">November</option>
-                    <option value="12" selected>December</option>
+                    <option value="12">December</option>
                 </select>
             </div>
         </div>
@@ -447,7 +447,6 @@ $conn->close();
                         <tr>
                             <th class="py-1">Incident</th>
                             <th class="py-1">Reports</th>
-                            <th class="py-1">Perc.</th>
                         </tr>
                     </thead>
                     <tbody id="crimeTableBody">
@@ -455,7 +454,6 @@ $conn->close();
                     </tbody>
                 </table>
             </div>
-          
         </div>
         <script>
             document.addEventListener('DOMContentLoaded', function () {
@@ -504,10 +502,7 @@ $conn->close();
                             tooltip: {
                                 callbacks: {
                                     label: function (tooltipItem) {
-                                        const value = tooltipItem.raw;
-                                        const total = dataValues.reduce((sum, val) => sum + val, 0);
-                                        const percentage = ((value / total) * 100).toFixed(2);
-                                        return `${value} complaints (${percentage}%)`;
+                                        return `${tooltipItem.raw} complaints`;
                                     }
                                 }
                             }
@@ -519,13 +514,10 @@ $conn->close();
                 function updateTable(data) {
                     const tableBody = document.getElementById('crimeTableBody');
                     tableBody.innerHTML = ''; // Clear existing rows
-                    const total = Object.values(data).reduce((sum, val) => sum + val, 0);
                     for (const [crime, count] of Object.entries(data)) {
-                        const percentage = ((count / total) * 100).toFixed(2);
                         const row = `<tr>
                             <td>${crime}</td>
                             <td>${count}</td>
-                            <td>${percentage}%</td>
                         </tr>`;
                         tableBody.insertAdjacentHTML('beforeend', row);
                     }
